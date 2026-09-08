@@ -1,0 +1,16 @@
+{
+  "workflow": "agentic-delivery-playbook",
+  "version": "0.2",
+  "phase": "approval",
+  "status": "awaiting-user-spec-approval",
+  "taskFit": "lightweight-ticket",
+  "specPath": "specs/20260907-2022-guided-replay/spec.md",
+  "activeRole": "audit-and-spec-author",
+  "modelSource": "runtime-default",
+  "reviewGates": {"sourceAudit": "complete", "browserAudit": "complete", "independentCritique": "complete-revisions-incorporated", "userSpecApproval": "pending", "implementationQA": "not-started"},
+  "modelLedger": [{"role":"source-reviewer","agent":"prototype_code_review","source":"agent-default"},{"role":"browser-auditor-and-spec-author","source":"runtime-default"}],
+  "sourceFilesChanged": [],
+  "validationEvidence": ["Twelve saved and inspected browser screenshots in work/ux-audit", "Browser reproduction of S3 residual hidden as zero", "Independent source review reproduced zero display and All-filter omission"],
+  "knownGaps": ["No implementation yet", "No full accessibility or responsive audit", "No Git repository at target path", "Optional presentation-placement response pending"],
+  "nextAction": "User approval before implementation"
+}

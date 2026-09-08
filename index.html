@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f7f3" />
+    <title>Range — Settlement operations prototype</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#queue" aria-label="Range home"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a>
+        <div class="topbar-meta"><span class="prototype-label"><span class="status-dot"></span>Interactive prototype · illustrative data</span><span class="topbar-divider" aria-hidden="true"></span><span class="as-of">Source as of <strong id="header-as-of">07 Sep 2026 · 10:00 UTC</strong></span><button class="avatar" type="button" aria-label="Signed in as Alex Morgan">AM</button></div>
+      </header>
+      <div class="workspace">
+        <aside class="sidebar" aria-label="Product navigation">
+          <div class="workspace-switcher"><span class="workspace-icon">A</span><span><strong>Atlas Exchange</strong><small>Operations</small></span><span class="chevron" aria-hidden="true">⌄</span></div>
+          <nav class="primary-nav">
+            <a class="nav-item active" href="#queue" data-nav="queue"><span class="nav-icon">⌘</span>Settlement queue</a>
+            <a class="nav-item" href="#case" data-nav="case"><span class="nav-icon">◌</span>Northstar case</a>
+            <a class="nav-item" href="#history" data-nav="history"><span class="nav-icon">↺</span>Case history</a>
+          </nav>
+          <div class="sidebar-bottom"><div class="sidebar-note"><span class="note-icon">i</span><div><strong>Custody transfer outside Range</strong><p>Range creates an approved settlement instruction. An authorized operator uses the existing custody process, then Range checks the available records.</p></div></div><button class="sidebar-link" type="button" data-action="open-fallback"><span>▣</span>Static capture for deck <span>↗</span></button></div>
+        </aside>
+        <main class="main-content" id="main-content"><noscript>This prototype needs JavaScript enabled.</noscript></main>
+      </div>
+      <aside class="presenter-panel" aria-label="Presenter controls">
+        <details class="presenter-drawer" open>
+          <summary><span class="presenter-summary-left"><span class="presenter-icon">✦</span><span><span class="eyebrow">Presenter controls</span><strong id="presenter-question">What lets the operator approve this settlement?</strong></span></span><span class="presenter-summary-right"><span id="presenter-summary">S1 · Step 1 of 6</span><span class="drawer-chevron" aria-hidden="true">⌃</span></span></summary>
+          <div class="presenter-inner">
+            <div class="scenario-buttons" role="group" aria-label="Select walkthrough"><button type="button" class="scenario-button active" data-scenario="s1"><span class="scenario-number">S1</span><span><strong>Normal settlement</strong><small>Approve → transfer → observe</small></span></button><button type="button" class="scenario-button" data-scenario="s2"><span class="scenario-number">S2</span><span><strong>Missed windows</strong><small>100,000 → 80,000 → 110,000</small></span></button><button type="button" class="scenario-button" data-scenario="s3"><span class="scenario-number">S3</span><span><strong>Settlement not observed</strong><small>125,000 owed · 110,000 issued</small></span></button></div>
+            <div class="presenter-actions"><span id="presenter-step">Step 1 of 6</span><span id="presenter-state">S1 · Start at the queue</span><button class="button button-quiet" type="button" data-action="presenter-action" id="presenter-action">Open Northstar case</button><button class="button button-quiet" type="button" data-action="reset">Reset walkthrough</button></div>
+          </div>
+        </details>
+      </aside>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"><span class="toast-icon">✓</span><span id="toast-copy">Walkthrough reset</span></div>
+    <div class="modal-backdrop" id="modal-backdrop" hidden></div><section class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden></section>
+    <script src="app.js"></script>
+  </body>
+</html>
