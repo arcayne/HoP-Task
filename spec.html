@@ -3,7 +3,7 @@
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><meta name="description" content="Range off-chain settlement MVP proposal and discussion draft." /><title>Range — MVP proposal</title><link rel="stylesheet" href="spec.css" /></head>
 <body>
 <header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>MVP proposal</span><a class="back-link" href="index.html">Back to prototype <span aria-hidden="true">↗</span></a></div></header>
-<div class="spec-shell"><aside class="spec-sidebar" aria-label="Spec navigation"><div class="sidebar-kicker">READING GUIDE</div><p class="sidebar-intro">A short proposal for the MVP and the first workflow we would build with Atlas.</p><nav class="spec-toc"><a href="#the-decision">The decision</a><a href="#1-the-workflow">1. The workflow</a><a href="#2-calculate-the-amount-then-verify-the-positions">2. Calculate and verify</a><a href="#3-what-blocks-settlement-and-who-resolves-it">3. Blocks and resolution</a><a href="#4-what-should-the-agent-investigate">4. Agent investigation</a><a href="#5-what-we-prove-in-the-two-week-pilot">5. Two-week pilot</a><a href="#6-product-success-and-pilot-learning">6. Success and learning</a></nav><div class="sidebar-links"><a href="engineering-appendix.html">Read formatted appendix <span>↗</span></a><a class="sidebar-source-link" href="engineering-appendix.md">View Markdown source <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>INTERVIEW PRE-READ</span><span>ABOUT SEVEN MINUTES</span><span>MVP</span></div><h1 id="range-off-chain-settlement-pilot-proposal">Range off-chain
+<div class="spec-shell"><aside class="spec-sidebar" aria-label="Spec navigation"><div class="sidebar-kicker">READING GUIDE</div><p class="sidebar-intro">A short proposal for the MVP and the first workflow we would build with Atlas.</p><nav class="spec-toc"><a href="#the-decision">The decision</a><a href="#1-the-workflow">1. The workflow</a><a href="#2-calculate-the-amount-and-verify-the-positions">2. Calculate and verify</a><a href="#3-what-blocks-settlement-and-who-resolves-it">3. Blocks and resolution</a><a href="#4-what-should-the-agent-investigate">4. Agent investigation</a><a href="#5-what-we-prove-in-the-two-week-pilot">5. Two-week pilot</a><a href="#6-product-success-and-pilot-learning">6. Success and learning</a></nav><div class="sidebar-links"><a href="engineering-appendix.html">Read formatted appendix <span>↗</span></a><a class="sidebar-source-link" href="engineering-appendix.md">View Markdown source <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>INTERVIEW PRE-READ</span><span>ABOUT SEVEN MINUTES</span><span>MVP</span></div><h1 id="range-off-chain-settlement-pilot-proposal">Range off-chain
 settlement: pilot proposal</h1>
 <p><strong>Interview pre read · about seven minutes · discussion
 draft</strong></p>
@@ -25,34 +25,7 @@ balances, and configured policies and controls.</p>
 <p><strong>Pilot assumptions:</strong> one account relationship, USDC,
 agreed realized P&amp;L, fees and funding. These accounting rules need
 validation with Atlas.</p>
-<h2 id="1-the-workflow">1. The workflow</h2><section class="workflow-visual" aria-labelledby="workflow-visual-title">
-  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE MVP RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">MVP workflow</span></div>
-  <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
-    <div class="workflow-node workflow-node-source"><span class="workflow-node-label">INPUT</span><strong>Existing source records</strong><small>Venue activity, custody balances, policies</small></div>
-    <span class="workflow-arrow" aria-hidden="true">→</span>
-    <div class="workflow-node workflow-node-calc"><span class="workflow-node-label">RANGE</span><strong>Calculate and reconcile</strong><small>Current amount, source cutoff, controls</small></div>
-    <span class="workflow-arrow" aria-hidden="true">→</span>
-    <div class="workflow-node workflow-node-decision"><span class="workflow-node-label">DECISION</span><strong>Fresh evidence and controls pass?</strong><small>One current result per relationship and asset</small></div>
-  </div>
-  <div class="workflow-branches">
-    <div class="workflow-branch workflow-branch-yes">
-      <div class="workflow-branch-label"><span>YES</span> Ready to review</div>
-      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Reviewer records agreement or disagreement</small></div>
-      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare with current process</span></div>
-      <div class="workflow-node workflow-node-external"><strong>Existing custody process</strong><small>Authorized payer executes outside Range</small></div>
-      <div class="workflow-connector workflow-connector-return"><span aria-hidden="true">↩</span><span>Range checks available settlement evidence</span></div>
-    </div>
-    <div class="workflow-branch workflow-branch-no">
-      <div class="workflow-branch-label"><span>NO</span> Needs attention</div>
-      <div class="workflow-node"><strong>Exception: reason, evidence, owner, next step</strong><small>Range blocks its proceed recommendation and keeps the last validated result visible</small></div>
-      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates manually in existing tools</span></div>
-      <div class="workflow-node workflow-node-external"><strong>Updated records arrive through connectors</strong><small>Human Check again or the next scheduled run re-evaluates them</small></div>
-    </div>
-  </div>
-  <div class="workflow-agent workflow-agent-current"><span class="workflow-agent-tag">THIS MVP</span><div><strong>Manual investigation + agent foundation</strong><small>Operations investigates while we define the first skill, permitted reads, fixtures and evaluation cases. The skill is not triggered automatically.</small></div></div>
-  <div class="workflow-agent workflow-agent-next"><span class="workflow-agent-tag">NEXT INCREMENT</span><div><strong>Agent-assisted investigation</strong><small>When invoked by an operator, the skill finds candidate records and explains gaps in a reviewable evidence brief.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
-  <p class="workflow-caption">The loop returns to the source records after a new observation or corrected record. A settlement window reviews the latest amount; it does not create a separate debt.</p>
-</section>
+<h2 id="1-the-workflow">1. The workflow</h2>
 <p><strong>Automatic:</strong> reconcile hourly and at two daily
 settlement windows.</p>
 <p><strong>On human request:</strong> the operator can rerun using
@@ -89,10 +62,37 @@ the named issue.</td>
 <p>Stale or invalid evidence takes priority even when the last amount
 was zero. Range cannot infer that a transfer is in progress from an
 operator review.</p>
-<h2 id="2-calculate-the-amount-then-verify-the-positions">2. Calculate
-the amount; then verify the positions</h2>
-<p><strong>Hourly calculation, for one relationship and
-asset:</strong></p>
+<h2 id="2-calculate-the-amount-and-verify-the-positions">2. Calculate
+the amount and verify the positions</h2><section class="workflow-visual" aria-labelledby="workflow-visual-title">
+  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE MVP RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">MVP workflow</span></div>
+  <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
+    <div class="workflow-node workflow-node-source"><span class="workflow-node-label">INPUT</span><strong>Existing source records</strong><small>Venue activity, custody balances, policies</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-calc"><span class="workflow-node-label">RANGE</span><strong>Calculate and reconcile</strong><small>Current amount, source cutoff, controls</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-decision"><span class="workflow-node-label">DECISION</span><strong>Fresh evidence and controls pass?</strong><small>One current result per relationship and asset</small></div>
+  </div>
+  <div class="workflow-branches">
+    <div class="workflow-branch workflow-branch-yes">
+      <div class="workflow-branch-label"><span>YES</span> Ready to review</div>
+      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Reviewer records agreement or disagreement</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare with current process</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Existing custody process</strong><small>Authorized payer executes outside Range</small></div>
+      <div class="workflow-connector workflow-connector-return"><span aria-hidden="true">↩</span><span>Range checks available settlement evidence</span></div>
+    </div>
+    <div class="workflow-branch workflow-branch-no">
+      <div class="workflow-branch-label"><span>NO</span> Needs attention</div>
+      <div class="workflow-node"><strong>Exception: reason, evidence, owner, next step</strong><small>Range blocks its proceed recommendation and keeps the last validated result visible</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates manually in existing tools</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Updated records arrive through connectors</strong><small>Human Check again or the next scheduled run re-evaluates them</small></div>
+    </div>
+  </div>
+  <div class="workflow-agent workflow-agent-current"><span class="workflow-agent-tag">THIS MVP</span><div><strong>Manual investigation + agent foundation</strong><small>Operations investigates while we define the first skill, permitted reads, fixtures and evaluation cases. The skill is not triggered automatically.</small></div></div>
+  <div class="workflow-agent workflow-agent-next"><span class="workflow-agent-tag">NEXT INCREMENT</span><div><strong>Agent-assisted investigation</strong><small>When invoked by an operator, the skill finds candidate records and explains gaps in a reviewable evidence brief.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
+  <p class="workflow-caption">The loop returns to the source records after a new observation or corrected record. A settlement window reviews the latest amount; it does not create a separate debt.</p>
+</section>
+<p><strong>Hourly calculation for Northstar Institutional in
+USDC:</strong></p>
 <pre class="text"><code>Current amount = opening unsettled amount
               + signed eligible venue activity
               − signed observed settlements</code></pre>

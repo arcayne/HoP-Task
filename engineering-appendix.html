@@ -45,12 +45,13 @@ connectors. External custody execution continues independently.</p>
 <h2 id="3-core-model">3. Core model</h2>
 <h3 id="amount-to-settle-the-backend-calculation-contract">Amount to
 settle: the backend calculation contract</h3>
-<p>Calculate separately for each institution, venue/custody account
-relationship, and asset. The amount is a net settlement obligation, not
-the gross custody balance or the value of the mirrored margin account.
-The last successfully settled position supplied by the existing system
-anchors the calculation; its balance must not simply be added as an
-amount owed.</p>
+<p>For this pilot, calculate Northstar Institutional's USDC
+relationship. The same contract can later apply to each institution,
+venue/custody account relationship, and asset. The amount is a net
+settlement obligation, not the gross custody balance or the value of the
+mirrored margin account. The last successfully settled position supplied
+by the existing system anchors the calculation; its balance must not
+simply be added as an amount owed.</p>
 <p>For the pilot, agree a baseline time <code>t0</code> and an opening
 unsettled amount <code>A0</code>. After a fully reconciled settlement,
 <code>A0 = 0</code>; onboarding with an existing remainder requires an

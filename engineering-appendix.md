@@ -30,7 +30,7 @@ The pilot adds reconciliation, calculation, controls, exception cases and review
 
 ### Amount to settle: the backend calculation contract
 
-Calculate separately for each institution, venue/custody account relationship, and asset. The amount is a net settlement obligation, not the gross custody balance or the value of the mirrored margin account. The last successfully settled position supplied by the existing system anchors the calculation; its balance must not simply be added as an amount owed.
+For this pilot, calculate Northstar Institutional's USDC relationship. The same contract can later apply to each institution, venue/custody account relationship, and asset. The amount is a net settlement obligation, not the gross custody balance or the value of the mirrored margin account. The last successfully settled position supplied by the existing system anchors the calculation; its balance must not simply be added as an amount owed.
 
 For the pilot, agree a baseline time `t0` and an opening unsettled amount `A0`. After a fully reconciled settlement, `A0 = 0`; onboarding with an existing remainder requires an explicitly agreed opening amount. At an hourly cutoff `T`:
 

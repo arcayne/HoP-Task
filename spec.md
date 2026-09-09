@@ -31,9 +31,9 @@ The agent does not trigger this action in the MVP. Start with two windows to lim
 
 Stale or invalid evidence takes priority even when the last amount was zero. Range cannot infer that a transfer is in progress from an operator review.
 
-## 2. Calculate the amount; then verify the positions
+## 2. Calculate the amount and verify the positions
 
-**Hourly calculation, for one relationship and asset:**
+**Hourly calculation for Northstar Institutional in USDC:**
 
 ```text
 Current amount = opening unsettled amount
