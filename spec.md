@@ -6,9 +6,9 @@
 
 Give Atlas Exchange one clear answer for Northstar Institutional: **what is the amount to settle, is it safe and permitted to proceed, and why**
 
-With one backend engineer and one frontend engineer, I would spend the first two weeks proving calculation, controls and the operator workflow in comparison mode. The authorized payer uses the existing custody process. Range observes the resulting settlement through existing read connectors.
+With one backend engineer and one frontend engineer, I would spend the first two weeks proving calculation, controls and the operator workflow in an MVP pilot. The authorized payer uses the existing custody process. Range observes the resulting settlement through existing read connectors.
 
-**Comparison mode:** compare Range's results with the existing process. Range's recommendations do not authorize or stop live transfers during this pilot.
+**Pilot assumption — shadow mode:** During these two weeks, Range compares its calculation and control result with the existing process. The output is informational: Range does not authorize or stop live transfers, and the existing custody process remains authoritative.
 
 **Already available:** account mapping, last successfully settled positions, current venue/custody activity and balances, and configured policies and controls.
 
@@ -60,7 +60,7 @@ New activity can change the amount without a transfer. A reported payment cannot
 | Venue equity | 890k | 890k | 0 |
 | Custody balance | 1m | 980k | **−20k** |
 
-**Range flags:** “Custody shows 20k less than expected. No available transaction explains the difference.” It shows **Needs attention** alongside the last validated 110k amount and timestamp. It does not assume the missing 20k was paid to Atlas.
+**Range flags:** “Custody shows 20k less than expected. No available transaction explains the difference.” It shows **Needs attention** alongside the last validated 110k amount and timestamp.
 
 **In the MVP:** detecting and explaining this difference is in scope. Operations investigates through the existing process; Range does not provide an accounting correction tool. The next section explains how the result comes back.
 
@@ -101,7 +101,7 @@ The next-increment agent gathers and explains evidence automatically. It does no
 
 1. **Can we trust the answer?** Agree the accounting and evidence rules, then replay real examples with known outcomes. Build calculation, reconciliation and controls first. If the sources cannot support a reliable answer, narrow the pilot before adding automation.
 2. **Can an operator act on it?** Build the queue, case, evidence and notes around those examples. Test whether operators can explain the amount and choose the correct next step without help. Use their mistakes to improve the workflow.
-3. **What did we learn in comparison mode?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
+3. **What did we learn in the first two weeks?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
 
 **FE contract:** display the backend's versioned amount, direction, readiness, evidence and allowed actions. The prototype guides layout; FE does not recalculate money. Detailed rules and known prototype follow-ups are in the appendix.
 

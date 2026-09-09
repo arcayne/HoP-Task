@@ -12,7 +12,7 @@ Range should give Atlas operations one reliable answer for each institutional cl
 
 For the first pilot, Range does not execute custody transfers or try to infer an in-progress payment. An authorized operator uses Atlas's existing custody process outside Range. Range marks the amount as settled only when it later observes sufficient matching evidence.
 
-The first cycle is an MVP pilot: Range's recommendations are compared with the existing process and do not authorize or stop live transfers. The short pilot proposal owns product scope. This appendix supplies implementation detail within that scope; it does not add a live approval, manual adjustment or metrics workstream.
+The first cycle is an MVP pilot. **Pilot assumption — shadow mode:** During these two weeks, Range compares its calculation and control result with the existing process. The output is informational: Range does not authorize or stop live transfers, and the existing custody process remains authoritative. The short pilot proposal owns product scope. This appendix supplies implementation detail within that scope; it does not add a live approval, manual adjustment or metrics workstream.
 
 This proves the control and decision layer first: calculation, reconciliation, controls, an operator case, and an auditable result.
 
@@ -224,7 +224,7 @@ The first candidate is **settlement not observed after an expected external acti
 |---|---|---|
 | Deterministic system, sprint one | Calculate, reconcile, run configured controls, match qualifying settlement evidence, update readiness, open/update cases and audit history. | Humans agree accounting rules and control configuration; unresolved evidence stays blocked or in review. |
 | Agent, next increment | Gather read-only evidence, explain differences, draft case summaries and recommend actions. | Operator validates proposed evidence associations; compliance decides policy-review cases. |
-| Operator | Review a specific amount/evidence version and record agreement or disagreement in comparison mode. | External transfer decisions and authorization remain in the existing process. |
+| Operator | Review a specific amount/evidence version and record agreement or disagreement in the MVP review. | External transfer decisions and authorization remain in the existing process. |
 | Deferred execution workflow | None in sprint one. | No agent-created transfer, retry, cancellation, policy override, or ledger adjustment. Design and authorize separately. |
 
 Do not treat an agent's confidence score as settlement evidence. Before introducing it, evaluate known matches, no-match cases, conflicting sources and misleading record text; require source-backed claims, permission-scoped reads and safe escalation. Measure whether it reduces evidence-gathering time without increasing unsupported matches. If it does not, retain manual investigation.
@@ -301,9 +301,9 @@ The calculation must be deterministic and replayable. Repeating Check again on t
 |---|---|---|
 | Can we trust the answer? | Agree accounting and matching rules; build deterministic calculation, reconciliation and controls against independently checked cases. | Resolve unsupported inputs or narrow the pilot. More UI or automation will not fix an unreliable source model. |
 | Can an operator act on it? | Build queue, case, evidence and notes against the shared outputs. PM-led walkthroughs test explanation and the correct next action. | Improve unclear evidence and guidance before adding more scenarios or automated actions. |
-| What did we learn in comparison mode? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
+| What did we learn in the first two weeks? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
 
-The backend carries the main uncertainty, so the frontend builds against versioned fixtures from the first days. The team uses a shared scenario set and reviews the prototype daily. An MVP comparison run is the default end state; controlled live use needs the matching rule, controls, and operational ownership to be validated first.
+The backend carries the main uncertainty, so the frontend builds against versioned fixtures from the first days. The team uses a shared scenario set and reviews the prototype daily. The MVP review is the default end state; controlled live use needs the matching rule, controls, and operational ownership to be validated first.
 
 ### How I would run this as Head of Product
 
@@ -315,7 +315,7 @@ I would organize work as vertical slices: correct amount and evidence first; con
 
 We would agree the response contract first so FE can progress against fixtures while BE resolves data semantics. I would hold a short daily review of blockers and changed assumptions and regular working walkthroughs. New edge cases enter the shared fixtures, and material decisions go back into this PRD. If matching is not reliable, I would narrow the pilot and reduce optional polish before weakening controls.
 
-Before calling the pilot usable, I would replay the acceptance cases with operations, compare the amounts against an independent expected calculation, record gaps, and observe whether operators can explain the amount and next step unaided. Release readiness requires deterministic replay, no duplicate application, enforced hard blocks, traceable decisions and a named exception owner. An MVP comparison run compares outputs with the current manual process; controlled live use is a separate decision after the evidence and external controls are validated.
+Before calling the pilot usable, I would replay the acceptance cases with operations, compare the amounts against an independent expected calculation, record gaps, and observe whether operators can explain the amount and next step unaided. Release readiness requires deterministic replay, no duplicate application, enforced hard blocks, traceable decisions and a named exception owner. The MVP review compares outputs with the current manual process; controlled live use is a separate decision after the evidence and external controls are validated.
 
 ### What comes next
 
