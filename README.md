@@ -1,6 +1,8 @@
-# Range settlement operations prototype
+# HoP / Range shadow settlement prototype
 
-A local, fixture-driven prototype implementing the focused Range site direction. It is intentionally synthetic: Range calculates the amount to settle, reconciles source records, checks configured policies and controls, and creates a settlement instruction. An authorized operator uses the existing custody process outside Range, then Range checks available records to determine whether settlement happened. No backend, authentication, custody API, external messages, live agent calls, or financial APIs are connected.
+A local, fixture-driven interview prototype for comparing Range's calculation and evidence with Atlas's existing process. It uses synthetic records for Northstar Institutional and USDC.
+
+**Shadow prototype · illustrative data.** Compare Range's results with the existing process. Range does not authorize or stop live transfers. This site does not build the production backend, connect custody providers, or implement agent execution.
 
 ## Run locally
 
@@ -8,21 +10,28 @@ A local, fixture-driven prototype implementing the focused Range site direction.
 python3 -m http.server 4173
 ```
 
-Open <http://localhost:4173/>. Use the collapsible presenter controls at the bottom to reset and switch between S1, S2, and S3.
+Open <http://localhost:4173/>. Use the collapsible presenter controls to reset and switch between the three main exercises. **More cases** contains the position-mismatch example.
 
 ## Walkthroughs
 
-- **S1 — Normal settlement:** open Northstar, review and approve the exact 100,000 USDC proposal, use the existing custody process in the simulated handoff, Check again with no matching record, then use the presenter to simulate a settlement record arriving and Check again. The amount to settle becomes 0.
-- **S2 — Missed windows:** switch to S2 and use **Next event** to replay 100,000 → 80,000 → 110,000. Earlier windows create no instructions. Review and create one 110,000 USDC instruction, ending at the custody transfer outside Range.
-- **S3 — Settlement not observed:** open the case, Check again with no match, inspect the investigation, optionally escalate locally, simulate a settlement record arriving, then Check again. The original 110,000 instruction becomes Settled and 15,000 remains as a separate amount to settle.
+- **S1 — Normal settlement:** start with 100,000 USDC Ready to settle. Review the result, agree or disagree with an optional comment, Check again before any expected settlement, simulate a qualifying source record, then Check again. The observed settlement reduces the amount to zero once.
+- **S2 — Missed windows:** use **Next event** to replay 100,000 → 80,000 → 110,000. Missed review windows create no debts or payment state. Review the current result only.
+- **S3 — Settlement not observed:** start with 125,000 owed, a contextual operator report of 110,000 paid, and no qualifying source evidence. Add a case note, Check again, inspect the manual investigation, simulate a source record arriving, then Check again. The observed 110,000 leaves 15,000.
+- **M1 — Position mismatch:** inspect a last validated 110,000 amount with a 20,000 custody discrepancy. Simulate a corrected custody snapshot and Check again; the 110,000 amount remains, with no fabricated settlement or replacement amount.
 
-The review dialog creates one stable illustrative instruction reference. **Copy instruction** never creates another instruction. **Check again** only inspects available synthetic observations; it does not send, retry, approve, or claim a fresh upstream fetch. Source data as of and Last checked remain separate.
+## Interaction model
 
-`fallback.html` is a static, print-friendly Northstar-only capture of the ready case and S3 before/after observation. It contains no functioning controls.
+- **Review result** records agreement or disagreement with Range's current result. It never authorizes a transfer or changes money.
+- **Add case note** stores short session-local context and an optional transaction reference/link as text. Notes do not match or settle records.
+- **Check again** evaluates the deterministic fixture projection. It distinguishes no new evidence, a changed result, an unavailable check, and a qualifying observed settlement. Repeated checks are idempotent for financial events.
+- Presenter controls simulate source records or corrected snapshots; they never silently perform the operator's Check again action.
+
+`fallback.html` is a static, print-friendly Northstar-only capture with no functioning controls.
 
 ## Files
 
-- `index.html` — focused Northstar-only prototype shell and presenter controls
-- `styles.css` — existing operations UI styling plus handoff, observation, and presenter states
-- `app.js` — signed-event projection, manual handoff, stable instructions, check-again behavior, guided exercises, evidence, history, and focus handling
+- `index.html` — shadow prototype shell and presenter controls
+- `styles.css` — existing operations UI styling and focused review/note states
+- `app.js` — signed-event projection, shadow reviews, notes, refresh semantics, guided exercises, and evidence/history
 - `fallback.html` — static fallback capture for deck use
+- `specs/` and `work/` — included implementation and audit artifacts

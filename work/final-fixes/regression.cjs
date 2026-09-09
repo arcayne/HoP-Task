@@ -1,42 +1,38 @@
 const fs = require('fs');
 const vm = require('vm');
-const assert = require('node:assert/strict');
-const source = fs.readFileSync('/Users/dearkane/Documents/dev/range/task/app.js','utf8').split("document.addEventListener('click'")[0];
-vm.runInNewContext(source + `
+
+const appSource = fs.readFileSync('/Users/dearkane/Documents/dev/range/task/app.js', 'utf8');
+const executable = appSource.split("document.addEventListener('click'")[0];
+vm.runInNewContext(executable + `
 render = () => {}; renderPresenter = () => {}; showToast = () => {}; closeModal = () => {}; openModal = () => {};
-const check = (v, msg) => { if (!v) throw Error(msg); };
-const approve = () => { const s=state.scenario; state.reviewSnapshot={amount:currentObligation(s),proposalVersion:s.proposalVersion}; submitMock(); };
-state.scenario=clone(SCENARIOS.s3); state.view='case';
-check(!canReview(state.scenario), 'unresolved original must block review');
-check(walkthroughProgress(state.scenario,'queue').step===1, 'S3 queue step');
-check(walkthroughProgress(state.scenario,'case').step===2, 'S3 case step');
-checkAgain(); check(currentObligation(state.scenario)===125000,'no match must preserve balance');
-check(walkthroughProgress(state.scenario,'case').step===3,'S3 checked step');
-simulateObservation(); check(walkthroughProgress(state.scenario,'case').step===4,'S3 record step');
-checkAgain(); check(currentObligation(state.scenario)===15000,'S3 residual');
-check(canReview(state.scenario),'settled original must allow residual review');
-check(walkthroughProgress(state.scenario,'case').step===5,'S3 settled step');
-check(!renderHandoffCard(state.scenario,activeInstruction(state.scenario)).includes('Execute in your custody tool'),'settled handoff must be historical');
-check(!renderInstructionCard(state.scenario,activeInstruction(state.scenario),projectScenario(state.scenario)).includes('data-action="copy-instruction"'),'settled instruction must not offer execution copy');
-checkAgain(); check(currentObligation(state.scenario)===15000,'duplicate observation');
-approve(); check(state.scenario.instructions.length===2,'separate instruction created');
-check(activeInstruction(state.scenario).amount===15000,'residual instruction amount');
-check(!state.scenario.observationAvailable && !state.scenario.checkResult,'new instruction needs new evidence');
-check(!canReview(state.scenario),'residual blocks overlap');
-checkAgain(); check(currentObligation(state.scenario)===15000,'old observation cannot settle residual');
-simulateObservation(); checkAgain(); check(currentObligation(state.scenario)===0,'residual settlement');
-check(state.scenario.events.filter(e=>e.type==='settlement').length===2,'distinct correlated movements');
-state.scenario=clone(SCENARIOS.s1);
-check(walkthroughProgress(state.scenario,'queue').step===1,'S1 queue');
-check(walkthroughProgress(state.scenario,'case').step===2,'S1 review');
-approve(); check(walkthroughProgress(state.scenario,'case').step===3,'S1 issued');
-checkAgain(); check(walkthroughProgress(state.scenario,'case').step===4,'S1 no match');
-simulateObservation(); check(walkthroughProgress(state.scenario,'case').step===5,'S1 observation');
-checkAgain(); check(walkthroughProgress(state.scenario,'case').step===6,'S1 settled');
-state.scenario=clone(SCENARIOS.s2);
-for (const [i,amount] of [100000,100000,80000,80000,110000,110000].entries()) {state.scenario.replayIndex=i;check(currentObligation(state.scenario)===amount,'S2 replay '+i);}
-approve(); check(walkthroughProgress(state.scenario,'case').step===7,'S2 handoff step');
-check(presenterActionLabel(state.scenario,'case')==='Walkthrough complete','S2 complete at handoff');
-check(state.scenario.instructions.length===1,'S2 one instruction');
-console.log('PASS: S1-S3 steps, manual handoff, residual review, overlap guard, fresh observation per instruction, repeat-check idempotency');
-`, {Intl, console, setTimeout, clearTimeout});
+const check = (value, message) => { if (!value) throw Error(message); };
+
+state.scenario = clone(SCENARIOS.s1); state.view = 'case';
+check(currentAmount(state.scenario) === 100000, 'S1 opening amount');
+check(statusFor(state.scenario).label === 'Ready to settle', 'S1 readiness');
+state.scenario.handoffReviewed = true;
+checkAgain(); check(currentAmount(state.scenario) === 100000, 'S1 no evidence preserves amount');
+check(statusFor(state.scenario).label === 'Needs attention', 'S1 missing evidence needs attention');
+simulateObservation(); checkAgain();
+check(currentAmount(state.scenario) === 0, 'S1 observed settlement clears amount');
+checkAgain(); check(currentAmount(state.scenario) === 0, 'S1 repeat check is idempotent');
+
+state.scenario = clone(SCENARIOS.s2);
+for (const [index, amount] of [100000, 100000, 80000, 80000, 110000, 110000].entries()) {
+  state.scenario.replayIndex = index;
+  check(currentAmount(state.scenario) === amount, 'S2 replay ' + index);
+}
+check(statusFor(state.scenario).label === 'Ready to settle', 'S2 final readiness');
+
+state.scenario = clone(SCENARIOS.s3);
+check(currentAmount(state.scenario) === 125000, 'S3 opening amount');
+check(statusFor(state.scenario).label === 'Needs attention', 'S3 missing evidence needs attention');
+simulateObservation(); checkAgain();
+check(currentAmount(state.scenario) === 15000, 'S3 observed 110k leaves 15k');
+check(statusFor(state.scenario).label === 'Ready to settle', 'S3 residual is a current amount');
+checkAgain(); check(currentAmount(state.scenario) === 15000, 'S3 repeat check is idempotent');
+
+check(!${JSON.stringify(appSource)}.includes('sim-instruction'), 'no Range instruction model');
+check(!${JSON.stringify(appSource)}.includes('Overlap protection'), 'no duplicate-transfer control claim');
+console.log('PASS: S1-S3 amounts, readiness, observed settlement, and repeat-check idempotency');
+`, { Intl, console, setTimeout, clearTimeout });
