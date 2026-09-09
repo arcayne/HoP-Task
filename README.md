@@ -17,7 +17,7 @@ Open <http://localhost:4173/>. Use the collapsible presenter controls to reset a
 - **S1 — Normal settlement:** start with 100,000 USDC Ready to settle. Review the result, agree or disagree with an optional comment, Check again before any expected settlement, simulate a qualifying source record, then Check again. The observed settlement reduces the amount to zero once.
 - **S2 — Missed windows:** use **Next event** to replay 100,000 → 80,000 → 110,000. Missed review windows create no debts or payment state. Review the current result only.
 - **S3 — Settlement not observed:** start with 125,000 owed, a contextual operator report of 110,000 paid, and no qualifying source evidence. Add a case note, Check again, inspect the manual investigation, simulate a source record arriving, then Check again. The observed 110,000 leaves 15,000.
-- **M1 — Position mismatch:** inspect a last validated 110,000 amount with a 20,000 custody discrepancy. Simulate a corrected custody snapshot and Check again; the 110,000 amount remains, with no fabricated settlement or replacement amount.
+- **M1 — Position mismatch:** inspect 110,000 USDC validated at 12:00 UTC with a 20,000 custody discrepancy detected at 13:00 UTC. Simulate a corrected custody snapshot and Check again; the 110,000 amount remains, with no fabricated settlement or replacement amount.
 
 ## Interaction model
 

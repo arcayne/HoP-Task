@@ -32,7 +32,16 @@ check(currentAmount(state.scenario) === 15000, 'S3 observed 110k leaves 15k');
 check(statusFor(state.scenario).label === 'Ready to settle', 'S3 residual is a current amount');
 checkAgain(); check(currentAmount(state.scenario) === 15000, 'S3 repeat check is idempotent');
 
+state.scenario = clone(SCENARIOS.s4);
+check(currentAmount(state.scenario) === 110000, 'M1 validated amount');
+check(statusFor(state.scenario).label === 'Needs attention', 'M1 position mismatch needs attention');
+check(nextActionCopy(state.scenario, 'case').includes('07 Sep 2026 · 12:00 UTC'), 'M1 keeps validated timestamp');
+check(nextActionCopy(state.scenario, 'case').includes('07 Sep 2026 · 13:00 UTC'), 'M1 shows discrepancy timestamp');
+state.scenario.correctedSnapshot = true; checkAgain();
+check(state.scenario.positionMismatch === false, 'M1 corrected snapshot clears mismatch');
+check(currentAmount(state.scenario) === 110000, 'M1 corrected snapshot preserves amount');
+
 check(!${JSON.stringify(appSource)}.includes('sim-instruction'), 'no Range instruction model');
 check(!${JSON.stringify(appSource)}.includes('Overlap protection'), 'no duplicate-transfer control claim');
-console.log('PASS: S1-S3 amounts, readiness, observed settlement, and repeat-check idempotency');
+console.log('PASS: S1-S3 amounts, readiness, observed settlement, repeat-check idempotency, and M1 mismatch correction');
 `, { Intl, console, setTimeout, clearTimeout });
