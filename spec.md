@@ -140,4 +140,4 @@ These cases illustrate the intended MVP. Investigation remains manual in the fir
 
 **[Open the interactive prototype →](https://arcayne.github.io/HoP-Task/)**
 
-The [in-depth technical spec](engineering-appendix.html) is available for questions about calculation rules and implementation.
+The [engineering appendix](engineering-appendix.md) is available for questions about calculation rules and implementation.
