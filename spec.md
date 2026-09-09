@@ -1,4 +1,4 @@
-# Range off-chain settlement: pilot proposal
+# Range settlement: MVP proposal
 
 **Interview pre read · about seven minutes · discussion draft**
 

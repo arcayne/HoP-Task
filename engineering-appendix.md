@@ -1,4 +1,4 @@
-# Range off-chain settlement: engineering appendix
+# Range settlement: engineering appendix
 
 **Status:** optional reference, 8 September 2026  
 **Audience:** Range product, operations, compliance, and engineering  
