@@ -234,7 +234,7 @@ function walkthroughProgress(s, view) {
 }
 function renderPresenter() {
   const s = state.scenario; const { step, total } = walkthroughProgress(s, state.view); const action = $('#presenter-action'); const label = presenterActionLabel(s, state.view); const complete = label === 'Walkthrough complete';
-  $$('.scenario-button').forEach(button => button.classList.toggle('active', button.dataset.scenario === state.scenarioId)); $('#presenter-step').textContent = `Step ${step} of ${total}`; $('#presenter-summary').textContent = `${s.label} · Step ${step} of ${total}`; $('#presenter-question').textContent = s.question; $('#presenter-state').textContent = complete ? 'Walkthrough complete' : statusFor(s).label; action.textContent = label; action.hidden = complete; action.disabled = complete; $('#header-as-of').textContent = s.asOf;
+  $$('.scenario-button').forEach(button => button.classList.toggle('active', button.dataset.scenario === state.scenarioId)); $('#presenter-step').textContent = `Step ${step} of ${total}`; $('#presenter-summary').textContent = `${s.label} · Step ${step} of ${total}`; $('#presenter-question').textContent = s.question; $('#presenter-state').textContent = complete ? 'Walkthrough complete' : statusFor(s).label; action.textContent = label; action.hidden = complete; action.disabled = complete;
 }
 function render() { if (state.view === 'case') renderCase(); else $('#main-content').innerHTML = renderQueue(); renderPresenter(); }
 function navigate(view) { state.view = view; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
