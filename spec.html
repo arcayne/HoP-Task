@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f7f3" />
+  <meta name="description" content="Range off-chain settlement pilot proposal and discussion draft." />
+  <title>Range — Pilot spec</title>
+  <link rel="stylesheet" href="spec.css" />
+</head>
+<body>
+  <header class="spec-topbar">
+    <a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a>
+    <div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Discussion draft</span><a class="back-link" href="index.html">Back to prototype <span aria-hidden="true">↗</span></a></div>
+  </header>
+  <div class="spec-shell">
+    <aside class="spec-sidebar" aria-label="Spec navigation">
+      <div class="sidebar-kicker">READING GUIDE</div>
+      <p class="sidebar-intro">A short proposal for the shadow pilot and the first workflow we would build with Atlas.</p>
+      <nav class="spec-toc">
+        <a href="#the-decision">The decision</a>
+        <a href="#1-the-workflow">1. The workflow</a>
+        <a href="#2-calculate-the-amount-then-verify-the-positions">2. Calculate and verify</a>
+        <a href="#3-what-blocks-settlement-and-who-resolves-it">3. Blocks and resolution</a>
+        <a href="#4-what-should-the-agent-investigate">4. Agent investigation</a>
+        <a href="#5-what-we-prove-in-the-two-week-pilot">5. Two-week pilot</a>
+        <a href="#6-product-success-and-pilot-learning">6. Success and learning</a>
+      </nav>
+      <div class="sidebar-links"><a href="engineering-appendix.md">Read engineering appendix <span>↗</span></a><a href="engineering-appendix.html">Open formatted appendix <span>↗</span></a></div>
+    </aside>
+    <main class="spec-document">
+      <div class="document-meta"><span>INTERVIEW PRE-READ</span><span>ABOUT SEVEN MINUTES</span><span>SHADOW MVP</span></div><h1 id="range-off-chain-settlement-pilot-proposal">Range off-chain
+settlement: pilot proposal</h1>
+<p><strong>Interview pre read · about seven minutes · discussion
+draft</strong></p>
+<h2 id="the-decision">The decision</h2>
+<p>Give Atlas Exchange one clear answer for Northstar Institutional:
+<strong>what is the amount to settle, is it safe and permitted to
+proceed, and why</strong></p>
+<p>With one backend engineer and one frontend engineer, I would spend
+the first two weeks proving calculation, controls and the operator
+workflow in shadow mode. The authorized payer uses the existing custody
+process. Range observes the resulting settlement through existing read
+connectors.</p>
+<p><strong>Shadow mode:</strong> compare Range's results with the
+existing process. Range's recommendations do not authorize or stop live
+transfers during this pilot.</p>
+<p><strong>Already available:</strong> account mapping, last
+successfully settled positions, current venue/custody activity and
+balances, and configured policies and controls.</p>
+<p><strong>Pilot assumptions:</strong> one account relationship, USDC,
+agreed realized P&amp;L, fees and funding. These accounting rules need
+validation with Atlas.</p>
+<h2 id="1-the-workflow">1. The workflow</h2>
+<section class="workflow-visual" aria-labelledby="workflow-visual-title">
+  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE PILOT RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">Shadow mode</span></div>
+  <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
+    <div class="workflow-node workflow-node-source"><span class="workflow-node-label">INPUT</span><strong>Existing source records</strong><small>Venue activity, custody balances, policies</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-calc"><span class="workflow-node-label">RANGE</span><strong>Calculate and reconcile</strong><small>Current amount, source cutoff, controls</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-decision"><span class="workflow-node-label">DECISION</span><strong>Fresh evidence and controls pass?</strong><small>One current result per relationship and asset</small></div>
+  </div>
+  <div class="workflow-branches">
+    <div class="workflow-branch workflow-branch-yes">
+      <div class="workflow-branch-label"><span>YES</span> Ready to review</div>
+      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Shadow review records agreement or disagreement</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare in shadow</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Existing custody process</strong><small>Authorized payer executes outside Range</small></div>
+      <div class="workflow-connector workflow-connector-return"><span aria-hidden="true">↩</span><span>Range checks available settlement evidence</span></div>
+    </div>
+    <div class="workflow-branch workflow-branch-no">
+      <div class="workflow-branch-label"><span>NO</span> Needs attention</div>
+      <div class="workflow-node"><strong>Exception: reason, evidence, owner, next step</strong><small>Range blocks its proceed recommendation and keeps the last validated result visible</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates in existing tools</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Updated records arrive through connectors</strong><small>Human Check again or the next scheduled run re-evaluates them</small></div>
+    </div>
+  </div>
+  <div class="workflow-agent"><span class="workflow-agent-tag">NEXT SPRINT</span><div><strong>Agent finds candidate records and explains gaps</strong><small>It returns an evidence brief to operations; it does not approve or trigger settlement.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
+  <p class="workflow-caption">The loop returns to the source records after a new observation or corrected record. A settlement window reviews the latest amount; it does not create a separate debt.</p>
+</section>
+<details class="workflow-source"><summary>View the source flow definition</summary><pre class="mermaid"><code>flowchart LR
+    A[Existing source records] --&gt; B[Calculate and reconcile]
+    B --&gt; C{Fresh evidence and controls pass?}
+    C --&gt;|Yes| D[Operator reviews current amount]
+    D -. Compare in shadow .-&gt; E[Existing custody process]
+    E --&gt; F[Range checks settlement evidence]
+    F --&gt; B
+    C --&gt;|No| G[Exception: reason, evidence, owner, next step]
+    G --&gt; H[Operations investigates in existing tools]
+    H --&gt;|Updated records via connectors| A
+    G -. Next sprint .-&gt; I[Agent finds candidate records and explains gaps]
+    I -. Evidence brief .-&gt; H</code></pre></details>
+<p><strong>Automatic:</strong> reconcile hourly and at two daily
+settlement windows. <strong>On human request:</strong> the operator to
+rerun using available connected records.</p>
+<p>The agent does not trigger this action in the MVP. Start with two
+windows to limit manual review work, validate the cadence against source
+latency, risk and custody cutoffs. A window reviews the latest amount,
+it creates no separate debt.</p>
+<table>
+<thead>
+<tr>
+<th>Operator state</th>
+<th>Meaning and next step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Up to date</strong></td>
+<td>A valid current calculation is zero. No settlement action
+needed.</td>
+</tr>
+<tr>
+<td><strong>Ready to settle</strong></td>
+<td>The amount is nonzero and checks pass. Review before proceeding
+externally.</td>
+</tr>
+<tr>
+<td><strong>Needs attention</strong></td>
+<td>Evidence or controls prevent proceeding. Open the case and resolve
+the named issue.</td>
+</tr>
+</tbody>
+</table>
+<p>Stale or invalid evidence takes priority even when the last amount
+was zero. Range cannot infer that a transfer is in progress from an
+operator review.</p>
+<h2 id="2-calculate-the-amount-then-verify-the-positions">2. Calculate
+the amount; then verify the positions</h2>
+<p><strong>Hourly calculation, for one relationship and
+asset:</strong></p>
+<pre class="text"><code>Current amount = opening unsettled amount
+              + signed eligible venue activity
+              − signed observed settlements</code></pre>
+<p>Positive means Northstar owes Atlas; negative means Atlas owes
+Northstar. Count each source event and economic settlement once. Replay
+from an agreed baseline, preserving calculation versions and source
+cutoffs.</p>
+<table>
+<thead>
+<tr>
+<th>What arrives</th>
+<th style="text-align: right;">Amount Northstar owes Atlas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100k loss</td>
+<td style="text-align: right;">100k</td>
+</tr>
+<tr>
+<td>20k profit</td>
+<td style="text-align: right;">80k</td>
+</tr>
+<tr>
+<td>30k further loss</td>
+<td style="text-align: right;">110k</td>
+</tr>
+<tr>
+<td>15k new activity</td>
+<td style="text-align: right;">125k</td>
+</tr>
+<tr>
+<td>Matching 110k settlement observed</td>
+<td style="text-align: right;"><strong>15k</strong></td>
+</tr>
+</tbody>
+</table>
+<p>New activity can change the amount without a transfer. A reported
+payment cannot reduce it without matching evidence. Rechecking identical
+inputs changes nothing.</p>
+<p><strong>Reconciliation checks whether the source positions make
+sense.</strong> In this example, Northstar starts with 1m USDC in
+custody, mirrored as venue equity. A 110k trading loss leaves 890k of
+venue equity and 110k owed to Atlas. No funds have moved, so custody
+should still show 1m:</p>
+<table>
+<thead>
+<tr>
+<th>Position</th>
+<th style="text-align: right;">Expected</th>
+<th style="text-align: right;">Reported</th>
+<th style="text-align: right;">Unexplained difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Venue equity</td>
+<td style="text-align: right;">890k</td>
+<td style="text-align: right;">890k</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>Custody balance</td>
+<td style="text-align: right;">1m</td>
+<td style="text-align: right;">980k</td>
+<td style="text-align: right;"><strong>−20k</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Range flags:</strong> “Custody shows 20k less than expected.
+No available transaction explains the difference.” It shows
+<strong>Needs attention</strong> alongside the last validated 110k
+amount and timestamp. It does not assume the missing 20k was paid to
+Atlas.</p>
+<p><strong>In the shadow MVP:</strong> detecting and explaining this
+difference is in scope. Operations investigates through the existing
+process; Range does not provide an accounting correction tool. The next
+section explains how the result comes back.</p>
+<h2 id="3-what-blocks-settlement-and-who-resolves-it">3. What blocks
+settlement, and who resolves it?</h2>
+<table>
+<thead>
+<tr>
+<th>Block or review reason</th>
+<th>Required response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stale, incomplete or disagreeing records</td>
+<td>Preserve the last validated result; obtain evidence and rerun.</td>
+</tr>
+<tr>
+<td>Insufficient available funds, invalid destination or policy/risk
+breach</td>
+<td>Explain the failed configured check; route to operations or
+compliance.</td>
+</tr>
+<tr>
+<td>Expected settlement has missing or ambiguous evidence</td>
+<td>Investigate before recommending another transfer. A timeout does not
+prove failure.</td>
+</tr>
+</tbody>
+</table>
+<p>The case gives the operator <strong>reason → source evidence → owner
+→ next action</strong>. A block means Range cannot recommend proceeding;
+the shadow pilot does not control the live custody process.</p>
+<p><strong>How an investigation comes back into Range:</strong></p>
+<ol type="1">
+<li>Operations checks the venue/custody tools and follows up with the
+source owner. In Range, they can add a short case note and transaction
+reference or link.</li>
+<li>A missing transaction or corrected balance must arrive through the
+existing read connectors. A note, uploaded receipt or direct database
+edit is not a financial correction mechanism in this MVP.</li>
+<li>The next scheduled run, or a human <strong>Check again</strong>,
+re-evaluates those records. Range saves a new calculation/check result
+and updates the case if the checks pass. If the required evidence is
+still unavailable, the case stays open.</li>
+</ol>
+<p>The backend stores calculation versions, check results and case notes
+with actor/time and source references. Shadow reviewers record agreement
+or disagreement with a result; this is not live payment approval.
+Evidence ingestion and manual adjustment workflows need discovery before
+they are added.</p>
+<h2 id="4-what-should-the-agent-investigate">4. What should the agent
+investigate?</h2>
+<p><strong>Proposed for the sprint after the shadow MVP.</strong> The
+agent would help operations find relevant transactions and explain
+missing or conflicting evidence. For example, Range shows 125k owed and
+the operator reports paying 110k. The agent gathers two candidate
+records:</p>
+<table>
+<thead>
+<tr>
+<th>Evidence</th>
+<th>Agent assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CUST-741</code>: 110k to Atlas; receiving record missing</td>
+<td>Relevant candidate; obtain the corresponding receipt.</td>
+</tr>
+<tr>
+<td><code>CUST-742</code>: 110k to Northstar's own account</td>
+<td>Different destination; not settlement to Atlas.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Agent recommendation:</strong> “Keep 125k open. Check the
+receiving record for CUST-741. CUST-742 does not settle this amount.”
+The output cites the source records and names what remains unknown.</p>
+<p>The operator reviews the proposed association. Once sufficient
+receipt evidence arrives through the existing connectors, deterministic
+matching revalidates and applies 110k once, leaving
+<strong>15k</strong>. Readiness still depends on current controls.</p>
+<p>The agent gathers and explains evidence automatically. It does not
+approve payments, change accounting rules, clear hard blocks or retry
+transfers. Evaluate it on correct citations, unsupported matches and
+investigation time before live use.</p>
+<h2 id="5-what-we-prove-in-the-two-week-pilot">5. What we prove in the
+two-week pilot</h2>
+<ol type="1">
+<li><strong>Can we trust the answer?</strong> Agree the accounting and
+evidence rules, then replay real examples with known outcomes. Build
+calculation, reconciliation and controls first. If the sources cannot
+support a reliable answer, narrow the pilot before adding
+automation.</li>
+<li><strong>Can an operator act on it?</strong> Build the queue, case,
+evidence and notes around those examples. Test whether operators can
+explain the amount and choose the correct next step without help. Use
+their mistakes to improve the workflow.</li>
+<li><strong>What did we learn in shadow mode?</strong> Check missed
+windows, partial observations, stale data and repeated refreshes. Close
+the two weeks with an operator/engineering retrospective: what was
+wrong, what was confusing, and what should we build next?</li>
+</ol>
+<p><strong>FE contract:</strong> display the backend's versioned amount,
+direction, readiness, evidence and allowed actions. The prototype guides
+layout; FE does not recalculate money. Detailed rules and known
+prototype follow-ups are in the appendix.</p>
+<p><strong>Manual now:</strong> custody execution and exception
+investigation. <strong>Next:</strong> evidence gathering agent.
+<strong>Later:</strong> authorized settlement-instruction delivery,
+approval integration and recovery, followed by broader coverage. Sending
+instructions and moving funds are distinct; both Range managed delivery
+and execution are deferred in this first cut.</p>
+<p>I would use this proposal, the prototype, the team's issue tracker
+and shared test cases to align the work. BE owns calculation and checks;
+FE builds against their agreed outputs. I own assumptions,
+prioritization and PM led operator QA; engineers own implementation and
+technical testing. Review evidence and blockers together, and adjust
+scope when assumptions fail.</p>
+<h2 id="6-product-success-and-pilot-learning">6. Product success and
+pilot learning</h2>
+<p><strong>The product hypothesis:</strong> operators can reach a
+correct, evidence-backed settlement decision with less manual
+investigation.</p>
+<p><strong>Proposed KPIs as the product develops:</strong></p>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Goal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incorrect amounts or payment directions</td>
+<td>Zero errors</td>
+</tr>
+<tr>
+<td>Missed settlement blocks</td>
+<td>Zero misses</td>
+</tr>
+<tr>
+<td>Cases requiring manual investigation (%)</td>
+<td>Decrease</td>
+</tr>
+<tr>
+<td>Active investigation time (minutes per case)</td>
+<td>Decrease</td>
+</tr>
+</tbody>
+</table>
+<p><strong>First-cycle scope:</strong> no metrics dashboard,
+instrumentation or formal KPI collection. At the end of two weeks,
+review observed errors, operator feedback and unresolved assumptions
+with the team, then choose the next improvement. This retrospective is
+qualitative learning, not a measured performance claim. Engineering QA
+remains part of delivery.</p>
+<h2 id="walk-through-the-first-cycle-cases">Walk through the first-cycle
+cases</h2>
+<p><strong>Let’s explore the prototype together:</strong> review a
+normal settlement, follow the amount across missed windows, and
+investigate a case where settlement has not been observed. For each
+case, we can test whether the amount, evidence and next operator action
+are clear.</p>
+<p>These cases illustrate the intended shadow MVP. Investigation remains
+manual in the first cycle; agent support follows later.</p>
+<p><strong><a href="https://arcayne.github.io/HoP-Task/">Explore the
+interactive prototype →</a></strong></p>
+<p>The <a href="engineering-appendix.md">engineering appendix</a> is
+available for questions about calculation rules and implementation.</p>
+<footer class="spec-footer"><a href="index.html">Return to the interactive prototype →</a><span>Source: <a href="spec.md">spec.md</a></span></footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -35,3 +35,10 @@ Open <http://localhost:4173/>. Use the collapsible presenter controls to reset a
 - `app.js` — signed-event projection, shadow reviews, notes, refresh semantics, guided exercises, and evidence/history
 - `fallback.html` — static fallback capture for deck use
 - `specs/` and `work/` — included implementation and audit artifacts
+
+## Reading the proposal
+
+- `spec.html` is the readable in-site version of the pilot proposal.
+- `spec.md` is the Markdown source used for that page.
+- `engineering-appendix.html` and `engineering-appendix.md` contain the implementation reference detail.
+- The prototype links to the pilot spec from its top bar, and the spec links back to the walkthrough.

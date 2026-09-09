@@ -1,0 +1,1124 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to pilot spec <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the pilot proposal.</p><nav class="spec-toc"><a href="spec.html">← Pilot spec</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-two-weeks">Two-week scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">Read raw Markdown <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>SHADOW MVP</span></div><h1 id="range-off-chain-settlement-engineering-appendix">Range off-chain
+settlement: engineering appendix</h1>
+<p><strong>Status:</strong> optional reference, 8 September 2026<br />
+<strong>Audience:</strong> Range product, operations, compliance, and
+engineering<br />
+<strong>Decision this document supports:</strong> whether the two week
+cut is the right first pilot</p>
+<p>Start with the <a href="spec.md">short pilot proposal</a>. This
+appendix preserves the detailed accounting, controls, examples and
+acceptance rules for engineering follow-up; it is not required interview
+preparation.</p>
+<h2 id="1-the-product-decision">1. The product decision</h2>
+<p>Range should give Atlas operations one reliable answer for each
+institutional client, account relationship, and asset: <strong>what is
+the current amount to settle, whether it is safe to act on, and what
+evidence supports that answer.</strong></p>
+<p>For the first pilot, Range does not execute custody transfers or try
+to infer an in-progress payment. An authorized operator uses Atlas's
+existing custody process outside Range. Range marks the amount as
+settled only when it later observes sufficient matching evidence.</p>
+<p>The first cycle is a shadow pilot: Range's recommendations are
+compared with the existing process and do not authorize or stop live
+transfers. The short pilot proposal owns product scope. This appendix
+supplies implementation detail within that scope; it does not add a live
+approval, manual adjustment or metrics workstream.</p>
+<p>This proves the control and decision layer first: calculation,
+reconciliation, controls, an operator case, and an auditable result.</p>
+<p>Atlas Exchange is the Range customer. Northstar Institutional is the
+illustrative pilot institution. The first scope is one account
+relationship and USDC.</p>
+<p>Atlas's operator coordinates the settlement decision. Whoever
+controls the paying custody account must authorize the transfer through
+the existing process; access to Range does not give Atlas authority over
+Northstar's wallet. Confirm the institution-side handoff and approver
+with the pilot participants.</p>
+<h2 id="2-what-is-already-available">2. What is already available</h2>
+<p>The task gives Range read access to venue activity, custody-account
+activity, balances, transactions, positions, account ownership, the last
+successfully settled position, and configured policies and controls. No
+new read connectors, vendor-specific custody integrations, or KYC are
+required.</p>
+<p>The pilot adds reconciliation, calculation, controls, exception cases
+and shadow review history, with observed settlements arriving through
+existing connectors. External custody execution continues
+independently.</p>
+<h2 id="3-core-model">3. Core model</h2>
+<h3 id="amount-to-settle-the-backend-calculation-contract">Amount to
+settle: the backend calculation contract</h3>
+<p>Calculate separately for each institution, venue/custody account
+relationship, and asset. The amount is a net settlement obligation, not
+the gross custody balance or the value of the mirrored margin account.
+The last successfully settled position supplied by the existing system
+anchors the calculation; its balance must not simply be added as an
+amount owed.</p>
+<p>For the pilot, agree a baseline time <code>t0</code> and an opening
+unsettled amount <code>A0</code>. After a fully reconciled settlement,
+<code>A0 = 0</code>; onboarding with an existing remainder requires an
+explicitly agreed opening amount. At an hourly cutoff
+<code>T</code>:</p>
+<pre><code>A(T) = A0 + sum(Ve for t0 &lt; effective_time(e) &lt;= T)
+          - sum(Sm for t0 &lt; effective_time(m) &lt;= T)
+
+Ve = signed settlement-relevant venue activity
+Sm = signed, matched, successfully observed settlement movement</code></pre>
+<p>The sign determines direction. A positive amount means the
+institution owes Atlas; a negative amount means Atlas owes the
+institution. The interface always spells out the direction instead of
+relying on a signed number.</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Sign in the pilot calculation</th>
+<th>Inclusion rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Realized P&amp;L</td>
+<td>Northstar loss is positive; Northstar profit is negative.</td>
+<td>Include posted, settlement-eligible realized P&amp;L.</td>
+</tr>
+<tr>
+<td>Fees</td>
+<td>Fee charged to Northstar is positive; rebate is negative.</td>
+<td>Include the agreed posted fee categories.</td>
+</tr>
+<tr>
+<td>Funding</td>
+<td>Funding paid by Northstar is positive; received is negative.</td>
+<td>Include posted funding once.</td>
+</tr>
+<tr>
+<td>Settlement movement</td>
+<td>Northstar → Atlas is positive; Atlas → Northstar is negative.</td>
+<td>Subtract only movements matched to this relationship and supported
+by sufficient settlement evidence.</td>
+</tr>
+<tr>
+<td>Unrealized P&amp;L, margin allocations, collateral deposits and
+withdrawals</td>
+<td>No automatic contribution to the amount.</td>
+<td>They can affect reconciliation, funds and risk checks; their
+settlement treatment must be agreed before inclusion.</td>
+</tr>
+</tbody>
+</table>
+<p>These accounting rules are proposed pilot assumptions, not facts
+supplied by the task. BE and the PM must validate them with Atlas
+operations before implementation. Do not count both a venue aggregate
+and the component P&amp;L, fees or funding already included in it.</p>
+<p><strong>Hourly worked example, USDC:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Cutoff</th>
+<th style="text-align: right;">Newly included venue activity</th>
+<th style="text-align: right;">Newly observed settlement</th>
+<th style="text-align: right;">Current amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>09:00</td>
+<td style="text-align: right;">+100,000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+100,000</td>
+</tr>
+<tr>
+<td>10:00</td>
+<td style="text-align: right;">−20,000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+80,000</td>
+</tr>
+<tr>
+<td>11:00</td>
+<td style="text-align: right;">+30,000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+110,000</td>
+</tr>
+<tr>
+<td>12:00</td>
+<td style="text-align: right;">+15,000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+125,000</td>
+</tr>
+<tr>
+<td>13:00</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">+110,000</td>
+<td style="text-align: right;">+15,000</td>
+</tr>
+</tbody>
+</table>
+<p>The hourly increment can be written
+<code>A(T) = A(previous) + new venue activity − new observed settlements</code>,
+but the result must also be reproducible from the baseline and unique
+source events. Re-reading the same hour or settlement must not change
+it. Use fixed-precision asset amounts, not floating-point
+arithmetic.</p>
+<p><strong>Evidence and version rules for BE:</strong></p>
+<ul>
+<li>Every input has a source, stable identity, relationship, asset,
+effective timestamp, observation timestamp, and signed value.
+Deduplicate repeated reads and the two sides of the same transfer; one
+economic settlement is applied once.</li>
+<li>Compute against a common cutoff covered by all required sources. A
+recently fetched response does not prove that its activity is complete.
+Persist source coverage and freshness alongside the result.</li>
+<li>Keep the pilot baseline stable and replay events after it. A partial
+settlement reduces the remainder; it does not reset the baseline to
+zero. If a baseline is later advanced, carry forward the exact remainder
+and exclude events already included.</li>
+<li>Late or corrected records create a new calculation version with the
+reason for the change. Do not silently alter the evidence attached to an
+earlier operator decision. Ambiguous corrections require review.</li>
+<li>Record calculation version, cutoff, opening amount, component
+totals, included event references, observed settlements, and result
+together. Concurrent hourly and Check again runs must not publish
+conflicting versions or apply an observation twice.</li>
+</ul>
+<p>Settlement windows do not create separate debts. They are moments to
+review the latest amount. If Northstar owes 100,000 USDC at one window,
+earns 20,000 before the next, and then owes another 30,000, the current
+amount to settle is 110,000 USDC. There is one current amount, not three
+payments waiting to be made.</p>
+<p>An external transfer does not change this amount merely because an
+operator says it was initiated. It counts against the amount only after
+matching settlement evidence is observed. New activity can increase or
+reduce the amount independently; zero caused by offsetting activity does
+not mean a transfer occurred.</p>
+<h3 id="observed-settlement">Observed settlement</h3>
+<p>Range marks settlement as observed when available source records
+provide sufficient evidence that the transfer occurred for the relevant
+relationship, asset, direction, and amount. The exact matching rule,
+such as a transaction reference plus amount and direction, is a pilot
+dependency to agree with Atlas.</p>
+<p><strong>Check again</strong> asks Range to re-evaluate the available
+connected records. It does not approve, send, retry, or manually confirm
+a payment. With no new eligible activity, corrections or matching
+settlement evidence, the amount stays unchanged. If new venue activity
+arrives, the calculation can change even when no settlement is
+observed.</p>
+<p>A match needs the agreed account mapping, asset/network, direction,
+amount, source reference and source-specific success/finality evidence.
+An amount-only match or a balance change alone is insufficient. A
+movement need not equal the latest total: an observed 110,000 USDC
+settlement can reduce a current 125,000 USDC amount. Conflicting,
+partial or multiple candidate records remain reviewable until the
+matching rule is satisfied.</p>
+<h3 id="operator-state">Operator state</h3>
+<p>Each relationship has one clear operational state:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Meaning</th>
+<th>Operator action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Up to date</td>
+<td>A valid current calculation is zero and no blocking reason
+remains.</td>
+<td>Review history if needed.</td>
+</tr>
+<tr>
+<td>Ready to settle</td>
+<td>A nonzero amount has complete, fresh evidence and passes configured
+controls.</td>
+<td>Compare the recommendation with the existing process and record a
+shadow review.</td>
+</tr>
+<tr>
+<td>Needs attention</td>
+<td>Evidence is stale, incomplete, inconsistent, or a control requires
+review or blocks a recommendation.</td>
+<td>Inspect and comment on the result; investigate through the existing
+process.</td>
+</tr>
+</tbody>
+</table>
+<p>Observed settlement is a recorded result in the calculation and
+history, not an operational state or a claim that Range watched a
+payment in progress. The queue can show a new nonzero amount after an
+earlier settlement has been observed.</p>
+<p>Evaluate blocking data and controls before the zero-amount state. A
+stale zero is still Needs attention. Up to date means a valid current
+calculation is zero; history explains whether settlement, offsetting
+activity, or both produced it.</p>
+<h2 id="4-mvp-workflow">4. MVP workflow</h2><section class="workflow-visual" aria-labelledby="workflow-visual-title">
+  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE PILOT RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">Shadow mode</span></div>
+  <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
+    <div class="workflow-node workflow-node-source"><span class="workflow-node-label">INPUT</span><strong>Existing source records</strong><small>Venue activity, custody balances, policies</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-calc"><span class="workflow-node-label">RANGE</span><strong>Calculate and reconcile</strong><small>Current amount, source cutoff, controls</small></div>
+    <span class="workflow-arrow" aria-hidden="true">→</span>
+    <div class="workflow-node workflow-node-decision"><span class="workflow-node-label">DECISION</span><strong>Fresh evidence and controls pass?</strong><small>One current result per relationship and asset</small></div>
+  </div>
+  <div class="workflow-branches">
+    <div class="workflow-branch workflow-branch-yes">
+      <div class="workflow-branch-label"><span>YES</span> Ready to review</div>
+      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Shadow review records agreement or disagreement</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare in shadow</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Existing custody process</strong><small>Authorized payer executes outside Range</small></div>
+      <div class="workflow-connector workflow-connector-return"><span aria-hidden="true">↩</span><span>Range checks available settlement evidence</span></div>
+    </div>
+    <div class="workflow-branch workflow-branch-no">
+      <div class="workflow-branch-label"><span>NO</span> Needs attention</div>
+      <div class="workflow-node"><strong>Exception: reason, evidence, owner, next step</strong><small>Range blocks its proceed recommendation and keeps the last validated result visible</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates in existing tools</span></div>
+      <div class="workflow-node workflow-node-external"><strong>Updated records arrive through connectors</strong><small>Human Check again or the next scheduled run re-evaluates them</small></div>
+    </div>
+  </div>
+  <div class="workflow-agent"><span class="workflow-agent-tag">NEXT SPRINT</span><div><strong>Agent finds candidate records and explains gaps</strong><small>It returns an evidence brief to operations; it does not approve or trigger settlement.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
+  <p class="workflow-caption">The loop returns to the source records after a new observation or corrected record. A settlement window reviews the latest amount; it does not create a separate debt.</p>
+</section><p class="workflow-reference-note">This is the same workflow shown in the short pilot proposal; the appendix adds the implementation detail below.</p>
+<ol type="1">
+<li><strong>Reconcile hourly.</strong> Range calculates the current
+amount from agreed venue activity and observed settlements. It records
+the calculation version, source as-of time, and any discrepancy with the
+agreed venue position.</li>
+<li><strong>Open settlement windows twice daily.</strong> A window makes
+eligible cases visible for review; it does not create a payment or reset
+the amount.</li>
+<li><strong>Apply deterministic controls.</strong> Range evaluates data
+freshness and completeness, account and asset mapping, reconciliation
+agreement, available settlement funds where configured, and applicable
+policy or compliance controls.</li>
+<li><strong>Give the operator a decision.</strong> The queue shows the
+amount, direction, readiness, as-of time, and next permitted action. The
+case explains calculation, controls, source records, and any
+exception.</li>
+<li><strong>Compare with the existing process.</strong> A shadow
+reviewer records agreement or disagreement with Range's amount and
+control result. The authorized payer continues using the existing
+custody process independently; a Range review does not initiate, approve
+or hold that transfer.</li>
+<li><strong>Check for evidence.</strong> Hourly runs and
+operator-triggered Check again use the same matching and calculation
+rules. Range applies a matching observed movement once and recalculates
+the remainder. A successful check with no new records leaves the amount
+unchanged; an unavailable or stale source changes readiness and explains
+the limitation.</li>
+</ol>
+<h3 id="reconciliation-timing-and-controls">Reconciliation timing and
+controls</h3>
+<p><strong>Proposed cadence:</strong> hourly reconciliation, plus a
+fresh evaluation at each of two daily settlement windows and on Check
+again. Hourly runs keep operations informed between windows; two daily
+windows limit manual custody work in the first pilot. These are starting
+choices to validate against activity, source latency, custody cutoffs
+and risk policy, not a claim that hourly data is always safe. More
+frequent or event-driven reconciliation comes later if the pilot needs
+it. Prevent overlapping runs for the same relationship.</p>
+<p>Reconciliation must compare like-for-like positions at the same
+cutoff. Mirrored venue assets and custody balances are not necessarily
+equal. Agree the bridge from the last successfully settled position to
+each source's expected current position, including eligible venue
+activity, settlement movements and separately classified collateral
+movements. Compare each expected position with its reported source
+position; show the unexplained difference. Never use a discrepancy as an
+automatic balancing adjustment to the amount to settle.</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Ready only when</th>
+<th>What blocks Range from recommending settlement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source quality</td>
+<td>Required sources cover the cutoff and meet configured freshness
+limits.</td>
+<td>Stale, missing, incomplete or unavailable required data.</td>
+</tr>
+<tr>
+<td>Account and asset mapping</td>
+<td>Institution, account, asset/network and destination match configured
+records.</td>
+<td>Unknown, conflicting or unauthorized mapping/destination.</td>
+</tr>
+<tr>
+<td>Reconciliation</td>
+<td>Position differences are explained or within an explicitly
+configured tolerance.</td>
+<td>Unexplained difference beyond tolerance; no agreed reconciliation
+bridge.</td>
+</tr>
+<tr>
+<td>Settlement funds and risk</td>
+<td>The payer has the required available funds, and configured
+margin/risk checks pass.</td>
+<td>Insufficient available funds or a breached configured risk limit. A
+total balance alone is insufficient.</td>
+</tr>
+<tr>
+<td>Policy and compliance</td>
+<td>Applicable policy/license controls pass and required reviews are
+complete.</td>
+<td>A hard policy block or an outstanding required human review.</td>
+</tr>
+<tr>
+<td>Unresolved settlement evidence</td>
+<td>There is no unresolved report or evidence of a transfer that might
+already cover the amount.</td>
+<td>A reported attempt with unknown outcome, conflicting records, or an
+unexplained excess movement.</td>
+</tr>
+</tbody>
+</table>
+<p>Each check returns pass, review or block with a reason, evidence and
+owner. Freshness thresholds, tolerances and review limits are
+configuration decisions to agree with the team. A control requiring
+review identifies a question for the existing operations/compliance
+process; it is not permission to bypass a hard block. Range withholds a
+proceed recommendation when blocked. Shadow agreement/disagreement and
+case notes remain available on that result, while transfers initiated in
+external custody tools remain outside Range's control.</p>
+<p>An absent settlement record is normal before anyone expects
+settlement. Raise an exception when an operator reports an attempt,
+evidence conflicts, or an agreed review deadline passes without expected
+evidence. Check again by itself must not imply that a transfer was
+attempted or failed.</p>
+<h3
+id="worked-reconciliation-example-the-amount-is-explainable-but-a-position-is-not">Worked
+reconciliation example: the amount is explainable, but a position is
+not</h3>
+<p><strong>Illustrative accounting arrangement to validate with
+Atlas.</strong> Start with 1,000,000 USDC in Northstar's designated
+custody account, mirrored as 1,000,000 USDC of venue account equity. For
+this example, realized losses reduce venue equity before funds move in
+custody. There are no other assets, unrealized P&amp;L, collateral
+movements or fees outside the stated activity. Compare venue equity with
+its expected equity and custody balance with its expected balance; do
+not compare a gross margin allocation with equity.</p>
+<p>At 12:00, posted realized losses of 110,000 USDC explain venue equity
+of 890,000 USDC. Custody still holds 1,000,000 USDC, and no settlement
+is observed. Reconciliation passes: the 110,000 USDC difference is the
+explained amount Northstar owes Atlas.</p>
+<p>At 13:00, no new eligible activity or settlement has arrived. Both
+sources report coverage through 13:00, but the custody balance now reads
+980,000 USDC without a supporting movement:</p>
+<table>
+<thead>
+<tr>
+<th>Position at 13:00</th>
+<th style="text-align: right;">Expected from baseline and records</th>
+<th style="text-align: right;">Reported position</th>
+<th style="text-align: right;">Unexplained difference: reported −
+expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Venue account equity</td>
+<td style="text-align: right;">1,000,000 − 110,000 = 890,000</td>
+<td style="text-align: right;">890,000</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>Northstar custody balance</td>
+<td style="text-align: right;">1,000,000 − 0 observed movements =
+1,000,000</td>
+<td style="text-align: right;">980,000</td>
+<td style="text-align: right;">−20,000</td>
+</tr>
+</tbody>
+</table>
+<p>The raw custody-to-venue difference is now 90,000 USDC, but Range
+must not replace the calculated 110,000 USDC amount with 90,000 or infer
+that 20,000 settled. The custody activity and balance disagree. Source
+coverage is a prerequisite for reconciliation, not proof that the
+records are internally consistent. Assume the 20,000 discrepancy exceeds
+the configured tolerance.</p>
+<p><strong>What the operator sees:</strong> “Needs attention. Last
+validated amount: Northstar owes Atlas 110,000 USDC, as of 12:00. The
+13:00 custody balance is 20,000 USDC below the balance explained by
+available records. Review custody activity and the balance snapshot.”
+The case links the baseline, venue loss entries, custody activity and
+both balance snapshots. Range blocks a new proceed recommendation and
+assigns the exception to operations; the last validated amount remains
+visible with its age.</p>
+<p><strong>Resolution in this example:</strong> operations identifies a
+custody reporting error and obtains a corrected source snapshot showing
+1,000,000 USDC. Range reruns reconciliation, records the corrected
+evidence in a new version and returns to Ready to settle if all other
+controls pass. The amount remains 110,000 USDC. No settlement event or
+balancing adjustment is invented. If the discrepancy remains
+unexplained, the case stays open.</p>
+<h2 id="5-what-we-ship-in-two-weeks">5. What we ship in two weeks</h2>
+<h3 id="in-scope">In scope</h3>
+<ul>
+<li>One pilot settlement arrangement: Northstar Institutional, one
+account relationship, USDC.</li>
+<li>Deterministic calculation from agreed realized P&amp;L, fees,
+funding, and observed settlements.</li>
+<li>Hourly reconciliation and two daily review windows.</li>
+<li>Freshness, completeness, reconciliation, mapping, balance, and
+configured-policy checks with a pass, review, or block reason.</li>
+<li>A queue and case showing the amount, direction, as-of time,
+evidence, controls, and next action.</li>
+<li>Shadow review, human-triggered Check again, and an exception case
+with a named owner, notes/references and auditable history.
+Investigation and escalation use existing tools.</li>
+<li>Versioned fixtures and QA coverage for the agreed scenarios before
+shadow use.</li>
+</ul>
+<h3 id="handled-manually">Handled manually</h3>
+<ul>
+<li>Investigating a missing, partial, or conflicting custody
+observation.</li>
+<li>Obtaining transaction IDs, custody links, and supporting records
+from existing tools.</li>
+<li>Resolving an accounting or policy dispute with the appropriate
+operations or compliance owner.</li>
+</ul>
+<h3 id="deferred">Deferred</h3>
+<ul>
+<li>Creating, sending, cancelling, replacing, or tracking custody
+transfers from Range.</li>
+<li>Inferring that a payment is in progress from an operator
+action.</li>
+<li>Preventing duplicate transfers made in an external custody
+tool.</li>
+<li>Automated recovery from a failed, timed-out, partial, or ambiguous
+external transfer.</li>
+<li>New connectors, custody integrations, KYC, cross-asset netting, and
+wider client or asset coverage.</li>
+<li>An agent in the first two-week build.</li>
+</ul>
+<p>The duplicate-transfer risk is explicit: the pilot can calculate one
+current amount and make observed settlements visible, but it cannot
+prevent a user from initiating the same transfer twice in an external
+tool. This is a reason to keep the pilot cohort small and use the
+existing operational controls until a later execution design is
+validated.</p>
+<h2 id="6-exceptions-and-evidence-rules">6. Exceptions and evidence
+rules</h2>
+<p>The system never turns missing evidence into a financial conclusion.
+A case needs attention when data is stale or incomplete, positions
+disagree, a policy blocks settlement, or a custody record cannot be
+matched safely.</p>
+<p>The case shows source references and their observation times, the
+last reconciled amount, the reason it is not ready, and the named next
+step. An operator may escalate, but cannot override a hard block or mark
+settlement as observed without the required evidence.</p>
+<p>The first useful next step for a later agent is narrow: collect
+candidate transaction IDs or custody links from available records,
+explain why each could match, and identify what remains unknown. The
+operator confirms the evidence; deterministic reconciliation then
+updates Range. The agent does not change an amount, clear a case,
+approve settlement, or bypass a policy.</p>
+<h3 id="exception-workflow-and-operator-resolution">Exception workflow
+and operator resolution</h3>
+<p><strong>First-cycle boundary: shadow investigation support.</strong>
+Range detects and explains exceptions, stores a named owner plus short
+notes and source references, and reruns deterministic checks. Operations
+investigates in existing venue/custody tools and escalates through its
+existing process. Missing or corrected financial records must arrive
+through the existing read connectors. A human can request Check again;
+the MVP agent does not exist and cannot trigger it. Notes and links are
+contextual evidence, not commands to change an amount or mark settlement
+observed. There is no receipt-upload ingestion, manual financial
+adjustment or direct database-edit workflow in scope. If connectors
+cannot supply the required evidence, the case stays unresolved and that
+limitation is recorded for discovery.</p>
+<p>Range persists calculation versions, check results, source references
+and case history. Only a new valid source-backed calculation/check
+result changes financial values or clears the corresponding block.
+Shadow review records agreement or disagreement with Range's result; it
+does not authorize a live payment. Range's blocks apply to its
+recommendations, while the existing process continues to govern live
+transfers.</p>
+<p>Keep one active case for the relationship and asset, with separately
+recorded reasons. A new hourly result updates its evidence and amount
+instead of creating another case for the same unresolved issue.</p>
+<p>Conceptual lifecycle:
+<code>Open → Investigating externally → Waiting for connected evidence → Resolved by checks</code>.
+In the first cycle, notes describe investigation progress; Range clears
+an exception reason only when the relevant deterministic checks pass.
+There is no manual financial-resolution or approval-state editor.</p>
+<p>Record an operations owner, reason, age, last update and next action.
+The operator can inspect linked records, add a reference or note and
+request a refresh; investigation and escalation use the existing
+operations/compliance process. Closing a note or accepting an
+explanation does not mark settlement as observed. Resolution requires
+the relevant deterministic checks to pass; a persisting or recurring
+problem keeps or reopens the case. Richer assignment,
+evidence-association and resolution-approval workflows require discovery
+after the shadow MVP.</p>
+<table>
+<thead>
+<tr>
+<th>Difficult case</th>
+<th>First-cycle behavior</th>
+<th>How work resumes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Venue and custody data disagree</td>
+<td>Preserve the last validated result, label the newer calculation
+unverified, show the difference and affected source references.
+Operations investigates.</td>
+<td>Correct or explain the source difference, then rerun the
+checks.</td>
+</tr>
+<tr>
+<td>Stale or incomplete data</td>
+<td>Show the last validated amount with its timestamp and Needs
+attention. An empty response is not a zero balance.</td>
+<td>Obtain complete current records and rerun.</td>
+</tr>
+<tr>
+<td>Settlement not observed after an expected external action</td>
+<td>Do not deduct the reported payment. New eligible activity may still
+change the calculated amount. Show what was checked and ask the operator
+for a custody reference; keep Range's recommendation blocked while the
+outcome is unclear.</td>
+<td>Matching connected evidence is applied once, or authoritative
+connected evidence resolves that no settlement occurred and controls are
+rerun. A note alone cannot resolve the financial outcome.</td>
+</tr>
+<tr>
+<td>Partial observed settlement</td>
+<td>Apply the proven movement once, show the remainder and the
+supporting records. Keep the case open for the remainder; do not
+describe partial observation as proof that a particular transfer
+failed.</td>
+<td>Review the remainder through the existing process.</td>
+</tr>
+<tr>
+<td>More settled than currently owed</td>
+<td>Preserve the signed result, explain the excess and flag Needs
+attention. Do not automatically recommend a reverse transfer.</td>
+<td>Operations resolves the cause and reviews the resulting amount and
+direction.</td>
+</tr>
+<tr>
+<td>Failed external settlement instruction</td>
+<td>Record the operator report and available failure evidence. A failed
+attempt is not a settlement and does not reduce the amount.</td>
+<td>Operations verifies the outcome in the custody system before
+deciding on a further attempt.</td>
+</tr>
+<tr>
+<td>Timeout or ambiguous result</td>
+<td>Treat it as unknown, not failed. Keep the case open and prevent a
+new Range recommendation pending investigation.</td>
+<td>Obtain authoritative evidence and rerun reconciliation. No automatic
+retry.</td>
+</tr>
+</tbody>
+</table>
+<p>The last two cases answer the task's settlement-instruction question
+while preserving the first-cycle boundary: Range has no instruction
+transport or execution state machine in this pilot. It can record
+reported or observed evidence and guide the operator. Reliable
+authorized instruction delivery remains a later product increment with
+acknowledgment, idempotency, status reconciliation and recovery designed
+together.</p>
+<h3
+id="what-should-the-agent-investigate-proposed-after-the-shadow-mvp">What
+should the agent investigate? Proposed after the shadow MVP</h3>
+<p>The first candidate is <strong>settlement not observed after an
+expected external action</strong>. It has a concrete input, bounded read
+access, and a useful output an operator can verify. Start with this
+rather than a general-purpose financial agent.</p>
+<ol type="1">
+<li>An exception opens with the calculation version, reason, relevant
+accounts, asset and time range.</li>
+<li>The agent reads only authorized existing records, control results
+and case history. It gathers candidate custody transactions or venue
+entries and compares identifiers, amount, direction and time.</li>
+<li>It returns a short evidence brief: facts with source links,
+candidate matches, contradictions, missing information, and a
+recommended next step. If evidence is insufficient, it says what is
+unknown and escalates.</li>
+<li>Operations reviews the proposed match or explanation; compliance
+handles policy questions. The decision and evidence are recorded against
+the case version.</li>
+<li>The deterministic matcher and control evaluator revalidate the
+evidence. They apply a valid movement once and publish the new
+amount/readiness, or leave the case unresolved.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Responsibility</th>
+<th>Automatic</th>
+<th>Human boundary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deterministic system, sprint one</td>
+<td>Calculate, reconcile, run configured controls, match qualifying
+settlement evidence, update readiness, open/update cases and audit
+history.</td>
+<td>Humans agree accounting rules and control configuration; unresolved
+evidence stays blocked or in review.</td>
+</tr>
+<tr>
+<td>Agent, next increment</td>
+<td>Gather read-only evidence, explain differences, draft case summaries
+and recommend actions.</td>
+<td>Operator validates proposed evidence associations; compliance
+decides policy-review cases.</td>
+</tr>
+<tr>
+<td>Operator</td>
+<td>Review a specific amount/evidence version and record agreement or
+disagreement in shadow mode.</td>
+<td>External transfer decisions and authorization remain in the existing
+process.</td>
+</tr>
+<tr>
+<td>Deferred execution workflow</td>
+<td>None in sprint one.</td>
+<td>No agent-created transfer, retry, cancellation, policy override, or
+ledger adjustment. Design and authorize separately.</td>
+</tr>
+</tbody>
+</table>
+<p>Do not treat an agent's confidence score as settlement evidence.
+Before introducing it, evaluate known matches, no-match cases,
+conflicting sources and misleading record text; require source-backed
+claims, permission-scoped reads and safe escalation. Measure whether it
+reduces evidence-gathering time without increasing unsupported matches.
+If it does not, retain manual investigation.</p>
+<h3
+id="worked-agent-example-find-the-evidence-for-a-reported-110000-usdc-payment">Worked
+agent example: find the evidence for a reported 110,000 USDC
+payment</h3>
+<p><strong>Next increment; not part of the first two-week
+build.</strong> This is a separate case from the reconciliation example
+above. Record references below are illustrative; the product would link
+to the authorized source records.</p>
+<p>Range shows 125,000 USDC owed: 110,000 from earlier activity plus
+15,000 of new activity. An operator reports that Northstar paid 110,000
+through its custody provider. This report opens an investigation but
+does not reduce the amount. For this example, the agreed automatic
+matching rule requires a successful custody debit and corresponding
+Atlas receipt with a shared transfer reference, matching asset/network,
+accounts, direction and amount.</p>
+<p>The agent reads the case and available source records and returns two
+candidates:</p>
+<table>
+<thead>
+<tr>
+<th>Candidate</th>
+<th>Evidence found</th>
+<th>Assessment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CUST-741</code></td>
+<td>110,000 USDC debit from the mapped Northstar account to the
+configured Atlas destination, posted at 13:24; transfer reference
+<code>XFER-741</code>. The corresponding Atlas receipt is not yet
+available in connected records.</td>
+<td>Relevant candidate. Amount, direction and destination fit, but the
+required receipt evidence is missing. Do not treat it as reconciled
+settlement yet.</td>
+</tr>
+<tr>
+<td><code>CUST-742</code></td>
+<td>Another 110,000 USDC debit at 13:26, from the same account to a
+different, mapped Northstar-owned custody account; reference
+<code>XFER-742</code>.</td>
+<td>Not settlement to Atlas. The same amount and nearby time are
+insufficient. Retain it as relevant custody activity for the separate
+position reconciliation.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example agent response shown in the case:</strong></p>
+<blockquote>
+<p>The current amount remains 125,000 USDC. CUST-741 is a candidate for
+the reported 110,000 payment because the amount, direction and Atlas
+destination match. I cannot confirm the required Atlas receipt from the
+available records. CUST-742 is a transfer to Northstar's own account and
+should not be matched to the amount owed to Atlas. Operations should
+check XFER-741 with the receiving team or custody provider and obtain
+the corresponding receipt. Keep the case open and avoid recommending
+another transfer while this outcome is unresolved.</p>
+</blockquote>
+<p>The operator reviews the cited records and requests the missing
+receipt through the existing process. The agent has gathered evidence
+and proposed the next step; it has not approved a payment, changed a
+balance, sent a message or cleared the exception.</p>
+<p><strong>When evidence arrives:</strong> a later connected record,
+<code>ATLAS-991</code>, shows a successful 110,000 USDC receipt with
+reference <code>XFER-741</code> and matching accounts, asset/network and
+direction. Operations confirms the proposed association; deterministic
+matching revalidates it and applies that economic settlement once.
+Assuming no other settlement-relevant activity has arrived, the current
+amount becomes <code>125,000 − 110,000 = 15,000 USDC</code>. A further
+refresh of these same records leaves it at 15,000.</p>
+<p>The remaining amount becomes Ready to settle only after current
+reconciliation, funds and policy checks pass, including the effects of
+the separate custody transfer. History preserves the operator report,
+both candidates, the agent's explanation, human decision, supporting
+receipt and resulting calculation version. If the receipt never arrives
+or contradicts the debit, the agent escalates the unresolved evidence;
+it does not manufacture a match.</p>
+<h3 id="decisions-and-approval-history">Decisions and approval
+history</h3>
+<p>For the first cycle, record whether a shadow reviewer agrees or
+disagrees with a specific calculation and control result, with an
+optional explanatory note. A changed version has not yet been reviewed;
+keep the prior review attached to its original inputs. Range still
+calculates readiness and blocked recommendations, but no review
+authorizes or asserts a custody transfer. Required external approvals
+happen in the existing process; a future Range approval flow must define
+approver roles and separation of duties.</p>
+<p>For every calculation, check, human decision and eventual agent
+recommendation, store: time, actor or service identity, case and
+calculation version, source references and coverage, amount/direction,
+rule/policy version, result and reason, and next action/owner. Preserve
+prior decisions and their inputs. A useful explanation reads: “Northstar
+owes 110,000 USDC: 100,000 carried forward − 20,000 earned + 30,000 new
+activity; no settlement observed; controls pass at this cutoff.” If it
+is blocked, name the failed check and what evidence will resolve it.</p>
+<h2 id="7-thin-frontend-contract">7. Thin frontend contract</h2>
+<p>Use the high-fidelity prototype for layout and interaction
+discussion. This PRD governs behavior; the prototype's illustrative
+state transitions are not the production specification.</p>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Minimum information and actions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Queue</td>
+<td>Northstar relationship, amount, explicit payer/payee direction,
+readiness, source as-of time, exception reason and next action; open the
+case.</td>
+</tr>
+<tr>
+<td>Case</td>
+<td>The same amount/version, calculation components, observed
+settlements, control results, evidence links and history. Distinguish
+the latest validated amount from a newer unverified result.</td>
+</tr>
+<tr>
+<td>Shadow review</td>
+<td>Current amount, payer/payee, cutoff, evidence version and controls.
+Record agreement/disagreement and an optional comment for Ready, Up to
+date or Needs attention results. If the version changes while the review
+is open, show the change and require selection of the current version
+before saving. Prior reviews remain immutable.</td>
+</tr>
+<tr>
+<td>Exception</td>
+<td>Reason, missing/conflicting evidence, owner, age and next step. Add
+a reference/note or select Check again. Investigation and escalation use
+the existing process.</td>
+</tr>
+<tr>
+<td>Check again</td>
+<td>Show checking, completed with changes, completed with no new
+evidence, or unavailable. Preserve the last validated information on
+failure. Never show success merely because the refresh request
+completed.</td>
+</tr>
+</tbody>
+</table>
+<p>BE returns one versioned result used by all surfaces:
+relationship/asset; signed amount and explicit direction; calculation
+version and cutoff; source coverage; component totals and evidence
+references; readiness and reason codes; allowed actions;
+exception/owner; review history; and last-check outcome. FE displays
+that result and does not independently calculate money or decide
+permission. The exact API shape is agreed together, not prescribed
+here.</p>
+<p>FE should cover loading, unavailable source, zero amount, reversed
+direction, Needs attention, changed-version review, empty history and
+repeated refresh. Shadow comments are allowed on blocked results;
+payment authorization and financial override actions are absent. If a
+result changes during review, show the change and request review of the
+latest version. Keep the earlier reviewed amount in history; do not
+relabel a newer amount as already reviewed. S1–S3 fixtures shared with
+BE are the starting contract, with the position-mismatch example and
+edge cases below added before acceptance.</p>
+<p><strong>Prototype follow-up:</strong> the current site demonstrates
+the main scenarios but needs these rules aligned before it is used as
+acceptance evidence: evaluate stale/invalid evidence before showing Up
+to date; distinguish an ordinary no-match refresh from a missed expected
+settlement; and preserve the actual reviewed amount/version when the
+current amount changes. Show the shadow boundary and add thin
+case-note/reference support; richer assignment and resolution tooling is
+deferred. These are specified here; this PRD revision does not claim
+that the site already implements them.</p>
+<h2 id="8-required-scenarios-and-acceptance-criteria">8. Required
+scenarios and acceptance criteria</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Expected result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Normal settlement</td>
+<td>Northstar owes 100,000 USDC. Controls pass. After a matching 100,000
+USDC settlement is observed, the amount to settle is zero.</td>
+</tr>
+<tr>
+<td>Missed windows</td>
+<td>100,000 USDC owed, then 20,000 USDC earned, then 30,000 USDC owed.
+The next review shows one current amount of 110,000 USDC.</td>
+</tr>
+<tr>
+<td>Settlement not yet observed</td>
+<td>The current amount is 125,000 USDC, including 15,000 USDC of new
+activity. An operator reports a 110,000 USDC payment, but matching
+evidence is missing. Check again with no new activity or qualifying
+evidence leaves 125,000 USDC open and retains the investigation
+case.</td>
+</tr>
+<tr>
+<td>No settlement expected</td>
+<td>With fresh, complete inputs and no reported attempt, conflicting
+evidence or missed expectation, Check again finds no settlement and
+leaves the amount and readiness unchanged. The refresh itself does not
+create an exception.</td>
+</tr>
+<tr>
+<td>Partial later observation</td>
+<td>A matching observed settlement of 110,000 USDC reduces the 125,000
+USDC amount to 15,000 USDC. The relationship is not shown as
+cleared.</td>
+</tr>
+<tr>
+<td>Stale or inconsistent sources</td>
+<td>Range blocks or routes to review, preserves the last calculation,
+and explains which source or control prevents action.</td>
+</tr>
+<tr>
+<td>Zero with stale data</td>
+<td>Needs attention, not Up to date. A zero balance does not bypass
+evidence and controls.</td>
+</tr>
+<tr>
+<td>Activity offsets the amount</td>
+<td>+20,000 followed by −20,000 produces zero with no settlement event.
+History explains the offset.</td>
+</tr>
+<tr>
+<td>Duplicate or concurrent observation</td>
+<td>Re-reading the same movement, observing both account legs, or racing
+an hourly run with Check again applies it once.</td>
+</tr>
+<tr>
+<td>Late data or changed review</td>
+<td>New evidence creates a new version and requires renewed review where
+relevant. The old review remains tied to its original inputs.</td>
+</tr>
+<tr>
+<td>Wrong direction, unknown mapping or multiple matches</td>
+<td>No automatic match. Needs attention with source references and a
+named next step.</td>
+</tr>
+<tr>
+<td>Failed, timed-out or excessive external settlement</td>
+<td>Preserve the evidence and resulting accounting facts; manual
+resolution is required before a new recommendation.</td>
+</tr>
+</tbody>
+</table>
+<p>The calculation must be deterministic and replayable. Repeating Check
+again on the same observation must never apply a settlement twice.
+Current amounts must agree across queue, case and calculation views.
+History retains the amount and version at each event, which can differ
+from today's amount. A reviewer must be able to identify who owes whom,
+why Range considers the amount reliable or unsafe, and the next action
+without reconstructing the ledger.</p>
+<h2 id="9-build-sequence-and-qa">9. Build sequence and QA</h2>
+<table>
+<thead>
+<tr>
+<th>Product question</th>
+<th>Build and validate</th>
+<th>Decision before expanding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Can we trust the answer?</td>
+<td>Agree accounting and matching rules; build deterministic
+calculation, reconciliation and controls against independently checked
+cases.</td>
+<td>Resolve unsupported inputs or narrow the pilot. More UI or
+automation will not fix an unreliable source model.</td>
+</tr>
+<tr>
+<td>Can an operator act on it?</td>
+<td>Build queue, case, evidence and notes against the shared outputs.
+PM-led walkthroughs test explanation and the correct next action.</td>
+<td>Improve unclear evidence and guidance before adding more scenarios
+or automated actions.</td>
+</tr>
+<tr>
+<td>What did we learn in shadow mode?</td>
+<td>Test stale data, partial observations, repeated refresh and changed
+versions; review observed errors and operator feedback.</td>
+<td>Close the two weeks with a retrospective and choose the next
+improvement. Formal KPI collection is deferred.</td>
+</tr>
+</tbody>
+</table>
+<p>The backend carries the main uncertainty, so the frontend builds
+against versioned fixtures from the first days. The team uses a shared
+scenario set and reviews the prototype daily. A shadow run is the
+default end state; controlled live use needs the matching rule,
+controls, and operational ownership to be validated first.</p>
+<h3 id="how-i-would-run-this-as-head-of-product">How I would run this as
+Head of Product</h3>
+<p>I would start with Max, engineering and an Atlas operations
+representative to agree the settlement definition, the actual custody
+handoff and one recent difficult case. I would bring the worked
+calculation and ask them to validate each input and source. I would
+involve compliance for hard blocks and review ownership, and the CTO for
+source coverage, matching and delivery risks. These decisions become a
+short assumption log with an owner and resolution date.</p>
+<p>I would use this PRD as the shared decision record, the deck to guide
+the team conversation, and the site to walk through operator actions. I
+would use the team's existing issue tracker for a small backlog, GitHub
+or its equivalent for code review and versioned fixtures, and a
+spreadsheet or executable calculation worksheet to independently check
+the expected amounts. No additional planning tool is needed for a
+two-week pilot.</p>
+<p>I would organize work as vertical slices: correct amount and evidence
+first; controls and a useful exception case second; review and
+observation third. Each ticket states the operator outcome, inputs,
+expected result and acceptance fixture. BE owns the deterministic model
+and consistency; FE owns displaying it and preventing misleading
+interactions. I own scope decisions, unresolved assumptions, operator
+feedback and acceptance QA, while engineers own technical testing and
+implementation choices.</p>
+<p>We would agree the response contract first so FE can progress against
+fixtures while BE resolves data semantics. I would hold a short daily
+review of blockers and changed assumptions and regular working
+walkthroughs. New edge cases enter the shared fixtures, and material
+decisions go back into this PRD. If matching is not reliable, I would
+narrow the pilot and reduce optional polish before weakening
+controls.</p>
+<p>Before calling the pilot usable, I would replay the acceptance cases
+with operations, compare the amounts against an independent expected
+calculation, record gaps, and observe whether operators can explain the
+amount and next step unaided. Release readiness requires deterministic
+replay, no duplicate application, enforced hard blocks, traceable
+decisions and a named exception owner. A shadow run compares outputs
+with the current manual process; controlled live use is a separate
+decision after the evidence and external controls are validated.</p>
+<h3 id="what-comes-next">What comes next</h3>
+<ol type="1">
+<li><strong>Next increment:</strong> the read-only evidence-gathering
+agent for the chosen exception, assessed against manual investigation
+using the same cases.</li>
+<li><strong>Then:</strong> a deliberately scoped settlement instruction
+and approval flow, once the executor, authorization, acknowledgment,
+duplicate protection and unknown-outcome handling are agreed.</li>
+<li><strong>After the first arrangement is reliable:</strong> revisit
+cadence, add arrangements/assets and richer operational reporting based
+on observed demand and risk.</li>
+</ol>
+<p>Deferring the agent and instruction delivery is a prioritization
+choice, not a complete answer to the longer-term product problem. If
+Range expects either to be demonstrated in the first cycle, I would
+renegotiate the slice explicitly rather than imply that external handoff
+or a scripted prototype already delivers it.</p>
+<h2 id="10-success-measures-and-open-questions">10. Success measures and
+open questions</h2>
+<p><strong>Product hypothesis:</strong> operators can reach a correct,
+evidence-backed settlement decision with less manual investigation.</p>
+<p><strong>First-cycle boundary:</strong> metrics instrumentation,
+dashboards and formal KPI collection are out of scope. Finish the two
+weeks with an operator/engineering retrospective on observed errors,
+confusing steps and unresolved assumptions. Use those observations to
+prioritize the next improvement; they are not a quantified baseline.
+Calculation tests, control checks and PM-led acceptance QA remain
+delivery work, separate from product KPI measurement.</p>
+<p><strong>Proposed KPIs for later measurement:</strong></p>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Definition to use when tracking is introduced</th>
+<th>Goal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incorrect amounts or payment directions</td>
+<td>Count incorrect calculation results against independently validated
+outcomes at the same cutoff. Record the reviewed sample size.</td>
+<td>Zero errors</td>
+</tr>
+<tr>
+<td>Missed settlement blocks</td>
+<td>Count cases where Range recommends proceeding despite a required
+block.</td>
+<td>Zero misses</td>
+</tr>
+<tr>
+<td>Cases requiring manual investigation (%)</td>
+<td>Cases needing human evidence gathering or discrepancy investigation
+/ all eligible cases in the measurement period. Routine operator review
+is not an investigation.</td>
+<td>Decrease</td>
+</tr>
+<tr>
+<td>Active investigation time</td>
+<td>Median human minutes per investigation, excluding time waiting for a
+source or counterparty.</td>
+<td>Decrease</td>
+</tr>
+</tbody>
+</table>
+<p>Agree baselines, periods and improvement targets with Atlas when
+introducing measurement. Compare similar case types, particularly when
+assessing the later agent. Lower investigation rates or times only count
+as improvement if correctness is maintained. These are product goals,
+not first-cycle measured results or claims about custody execution
+speed.</p>
+<p>The Range conversation should resolve these questions:</p>
+<ol type="1">
+<li>Which client, account relationship, asset, and venue accounting
+definition make up the first pilot?</li>
+<li>What exact evidence is sufficient for Range to mark a settlement as
+observed?</li>
+<li>Who is allowed to initiate the external custody transfer, and what
+existing operational controls prevent duplicate transfers during the
+pilot?</li>
+<li>Which policies are hard blocks, and which need compliance
+review?</li>
+<li>Which exception most deserves the next-sprint evidence-gathering
+agent?</li>
+<li>What are the accounting bridge, eligible event types, treatment of
+collateral/unrealized P&amp;L, and source deduplication keys?</li>
+<li>What source freshness/completeness guarantees, reconciliation
+tolerances, window times and review deadlines fit Atlas's actual
+operations?</li>
+<li>Is a shadow control-and-decision pilot the right first-cycle
+outcome, with agent investigation and reliable instruction delivery
+sequenced afterward?</li>
+</ol>
+<p>The shared product boundary remains: Range calculates and controls
+the amount to settle; external custody systems move funds; Range
+observes evidence and reconciles the result. This expanded PRD is the
+behavioral reference for the prototype follow-ups above and for the next
+deck wording pass.</p>
+<footer class="spec-footer"><a href="spec.html">Return to the pilot spec →</a><span>Source: <a href="engineering-appendix.md">engineering-appendix.md</a></span></footer></main></div></body></html>
