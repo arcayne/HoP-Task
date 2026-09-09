@@ -14,7 +14,7 @@ With one backend engineer and one frontend engineer, I would spend the first two
 
 **Pilot assumptions:** one account relationship, USDC, agreed realized P&L, fees and funding. These accounting rules need validation with Atlas.
 
-> **Assumptions I am making, and what I need Range to confirm**
+> **Assumptions and open questions**
 >
 > - **Assumed:** Atlas is the customer; Northstar's authorized payer executes transfers in the existing custody process, and Range observes the result through existing read connectors.
 > - **Assumed:** the amount to settle is a net obligation from posted realized P&L, fees and funding; unrealized P&L and collateral movements do not contribute until agreed.
