@@ -1,13 +1,13 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to MVP proposal <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the MVP proposal.</p><nav class="spec-toc"><a href="spec.html">← MVP proposal</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-the-pilot">Pilot scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">View Markdown source <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>MVP</span></div><h1 id="range-settlement-engineering-appendix">Range settlement:
-engineering appendix</h1>
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — In-depth technical spec</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>In-depth technical spec</span><a class="back-link" href="spec.html">Back to MVP proposal <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">IN-DEPTH TECHNICAL SPEC</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the MVP proposal.</p><nav class="spec-toc"><a href="spec.html">← MVP proposal</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-the-pilot">Pilot scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>IN-DEPTH TECHNICAL SPEC</span><span>REFERENCE</span><span>MVP</span></div><h1 id="range-settlement-in-depth-technical-spec">Range settlement:
+in-depth technical spec</h1>
 <p><strong>Status:</strong> optional reference, 8 September 2026<br />
 <strong>Audience:</strong> Range product, operations, compliance, and
 engineering<br />
 <strong>Decision this document supports:</strong> whether the two week
 cut is the right first pilot</p>
-<p>Start with the <a href="spec.md">short pilot proposal</a>. This
-appendix preserves the detailed accounting, controls, examples and
-acceptance rules for engineering follow-up; it is not required interview
+<p>Start with the <a href="spec.html">MVP proposal</a>. This appendix
+preserves the detailed accounting, controls, examples and acceptance
+rules for engineering follow-up; it is not required interview
 preparation.</p>
 <h2 id="1-the-product-decision">1. The product decision</h2>
 <p>Range should give Atlas operations one reliable answer for each
@@ -527,7 +527,7 @@ updates Range. The agent does not change an amount, clear a case,
 approve settlement, or bypass a policy.</p>
 <h3 id="exception-workflow-and-operator-resolution">Exception workflow
 and operator resolution</h3>
-<p><strong>First-cycle boundary: manual investigation plus agent
+<p><strong>First cycle boundary: manual investigation plus agent
 foundation.</strong> Range detects and explains exceptions, stores a
 named owner plus short notes and source references, and reruns
 deterministic checks. Operations investigates in existing venue/custody
@@ -567,7 +567,7 @@ after this MVP.</p>
 <thead>
 <tr>
 <th>Difficult case</th>
-<th>First-cycle behavior</th>
+<th>First cycle behavior</th>
 <th>How work resumes</th>
 </tr>
 </thead>
@@ -628,7 +628,7 @@ retry.</td>
 </tbody>
 </table>
 <p>The last two cases answer the task's settlement-instruction question
-while preserving the first-cycle boundary: Range has no instruction
+while preserving the first cycle boundary: Range has no instruction
 transport or execution state machine in this pilot. It can record
 reported or observed evidence and guide the operator. Reliable
 authorized instruction delivery remains a later product increment with
@@ -1064,7 +1064,7 @@ or a scripted prototype already delivers it.</p>
 open questions</h2>
 <p><strong>Product hypothesis:</strong> operators can reach a correct,
 evidence-backed settlement decision with less manual investigation.</p>
-<p><strong>First-cycle boundary:</strong> metrics instrumentation,
+<p><strong>First cycle boundary:</strong> metrics instrumentation,
 dashboards and formal KPI collection are out of scope. Finish the two
 weeks with an operator/engineering retrospective on observed errors,
 confusing steps and unresolved assumptions. Use those observations to
@@ -1112,7 +1112,7 @@ source or counterparty.</td>
 introducing measurement. Compare similar case types, particularly when
 assessing the later agent. Lower investigation rates or times only count
 as improvement if correctness is maintained. These are product goals,
-not first-cycle measured results or claims about custody execution
+not first cycle measured results or claims about custody execution
 speed.</p>
 <p>The Range conversation should resolve these questions:</p>
 <ol type="1">
@@ -1132,7 +1132,7 @@ collateral/unrealized P&amp;L, and source deduplication keys?</li>
 <li>What source freshness/completeness guarantees, reconciliation
 tolerances, window times and review deadlines fit Atlas's actual
 operations?</li>
-<li>Is an MVP control-and-decision pilot the right first-cycle outcome,
+<li>Is an MVP control-and-decision pilot the right first cycle outcome,
 with agent investigation and reliable instruction delivery sequenced
 afterward?</li>
 </ol>
@@ -1141,4 +1141,4 @@ the amount to settle; external custody systems move funds; Range
 observes evidence and reconciles the result. This expanded PRD is the
 behavioral reference for the prototype follow-ups above and for the next
 deck wording pass.</p>
-<footer class="spec-footer"><a href="spec.html">Return to the MVP proposal →</a><span>Source: <a href="engineering-appendix.md">engineering-appendix.md</a></span></footer></main></div></body></html>
+<footer class="spec-footer"><a href="spec.html">Return to the MVP proposal →</a></footer></main></div></body></html>

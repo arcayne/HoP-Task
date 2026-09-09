@@ -128,9 +128,9 @@ I would use this proposal, the prototype, the team's issue tracker and shared te
 | Cases requiring manual investigation (%) | Decrease |
 | Active investigation time (minutes per case) | Decrease |
 
-**First-cycle scope:** no metrics dashboard, instrumentation or formal KPI collection. At the end of two weeks, review observed errors, operator feedback and unresolved assumptions with the team, then choose the next improvement. This retrospective is qualitative learning, not a measured performance claim. Engineering QA remains part of delivery.
+**First cycle scope:** no metrics dashboard, instrumentation or formal KPI collection. At the end of two weeks, review observed errors, operator feedback and unresolved assumptions with the team, then choose the next improvement. This retrospective is qualitative learning, not a measured performance claim. Engineering QA remains part of delivery.
 
-## 7. Walk through the first-cycle cases
+## 7. Interactive prototype
 
 **Start with the interactive prototype:** use the presenter controls at the bottom of the screen to walk through the cases in order. They guide you through a normal settlement, missed windows, settlement not observed, and the position mismatch example.
 
@@ -140,4 +140,4 @@ These cases illustrate the intended MVP. Investigation remains manual in the fir
 
 **[Open the interactive prototype →](https://arcayne.github.io/HoP-Task/)**
 
-The [engineering appendix](engineering-appendix.md) is available for questions about calculation rules and implementation.
+The [in-depth technical spec](engineering-appendix.html) is available for questions about calculation rules and implementation.

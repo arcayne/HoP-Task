@@ -1,10 +1,10 @@
-# Range settlement: engineering appendix
+# Range settlement: in-depth technical spec
 
 **Status:** optional reference, 8 September 2026  
 **Audience:** Range product, operations, compliance, and engineering  
 **Decision this document supports:** whether the two week cut is the right first pilot
 
-Start with the [short pilot proposal](spec.md). This appendix preserves the detailed accounting, controls, examples and acceptance rules for engineering follow-up; it is not required interview preparation.
+Start with the [MVP proposal](spec.html). This appendix preserves the detailed accounting, controls, examples and acceptance rules for engineering follow-up; it is not required interview preparation.
 
 ## 1. The product decision
 
@@ -188,7 +188,7 @@ The first useful next step for a later agent is narrow: collect candidate transa
 
 ### Exception workflow and operator resolution
 
-**First-cycle boundary: manual investigation plus agent foundation.** Range detects and explains exceptions, stores a named owner plus short notes and source references, and reruns deterministic checks. Operations investigates in existing venue/custody tools and escalates through its existing process. Missing or corrected financial records must arrive through the existing read connectors. A human can request Check again; the MVP agent does not exist and cannot trigger it. Notes and links are contextual evidence, not commands to change an amount or mark settlement observed. There is no receipt-upload ingestion, manual financial adjustment or direct database-edit workflow in scope. If connectors cannot supply the required evidence, the case stays unresolved and that limitation is recorded for discovery.
+**First cycle boundary: manual investigation plus agent foundation.** Range detects and explains exceptions, stores a named owner plus short notes and source references, and reruns deterministic checks. Operations investigates in existing venue/custody tools and escalates through its existing process. Missing or corrected financial records must arrive through the existing read connectors. A human can request Check again; the MVP agent does not exist and cannot trigger it. Notes and links are contextual evidence, not commands to change an amount or mark settlement observed. There is no receipt-upload ingestion, manual financial adjustment or direct database-edit workflow in scope. If connectors cannot supply the required evidence, the case stays unresolved and that limitation is recorded for discovery.
 
 Range persists calculation versions, check results, source references and case history. Only a new valid source-backed calculation/check result changes financial values or clears the corresponding block. Comparison review records agreement or disagreement with Range's result; it does not authorize a live payment. Range's blocks apply to its recommendations, while the existing process continues to govern live transfers.
 
@@ -198,7 +198,7 @@ Conceptual lifecycle: `Open → Investigating externally → Waiting for connect
 
 Record an operations owner, reason, age, last update and next action. The operator can inspect linked records, add a reference or note and request a refresh; investigation and escalation use the existing operations/compliance process. Closing a note or accepting an explanation does not mark settlement as observed. Resolution requires the relevant deterministic checks to pass; a persisting or recurring problem keeps or reopens the case. Richer assignment, evidence-association and resolution-approval workflows require discovery after this MVP.
 
-| Difficult case | First-cycle behavior | How work resumes |
+| Difficult case | First cycle behavior | How work resumes |
 |---|---|---|
 | Venue and custody data disagree | Preserve the last validated result, label the newer calculation unverified, show the difference and affected source references. Operations investigates. | Correct or explain the source difference, then rerun the checks. |
 | Stale or incomplete data | Show the last validated amount with its timestamp and Needs attention. An empty response is not a zero balance. | Obtain complete current records and rerun. |
@@ -208,7 +208,7 @@ Record an operations owner, reason, age, last update and next action. The operat
 | Failed external settlement instruction | Record the operator report and available failure evidence. A failed attempt is not a settlement and does not reduce the amount. | Operations verifies the outcome in the custody system before deciding on a further attempt. |
 | Timeout or ambiguous result | Treat it as unknown, not failed. Keep the case open and prevent a new Range recommendation pending investigation. | Obtain authoritative evidence and rerun reconciliation. No automatic retry. |
 
-The last two cases answer the task's settlement-instruction question while preserving the first-cycle boundary: Range has no instruction transport or execution state machine in this pilot. It can record reported or observed evidence and guide the operator. Reliable authorized instruction delivery remains a later product increment with acknowledgment, idempotency, status reconciliation and recovery designed together.
+The last two cases answer the task's settlement-instruction question while preserving the first cycle boundary: Range has no instruction transport or execution state machine in this pilot. It can record reported or observed evidence and guide the operator. Reliable authorized instruction delivery remains a later product increment with acknowledgment, idempotency, status reconciliation and recovery designed together.
 
 ### What should the agent investigate? Next agent increment
 
@@ -331,7 +331,7 @@ Deferring the agent and instruction delivery is a prioritization choice, not a c
 
 **Product hypothesis:** operators can reach a correct, evidence-backed settlement decision with less manual investigation.
 
-**First-cycle boundary:** metrics instrumentation, dashboards and formal KPI collection are out of scope. Finish the two weeks with an operator/engineering retrospective on observed errors, confusing steps and unresolved assumptions. Use those observations to prioritize the next improvement; they are not a quantified baseline. Calculation tests, control checks and PM-led acceptance QA remain delivery work, separate from product KPI measurement.
+**First cycle boundary:** metrics instrumentation, dashboards and formal KPI collection are out of scope. Finish the two weeks with an operator/engineering retrospective on observed errors, confusing steps and unresolved assumptions. Use those observations to prioritize the next improvement; they are not a quantified baseline. Calculation tests, control checks and PM-led acceptance QA remain delivery work, separate from product KPI measurement.
 
 **Proposed KPIs for later measurement:**
 
@@ -342,7 +342,7 @@ Deferring the agent and instruction delivery is a prioritization choice, not a c
 | Cases requiring manual investigation (%) | Cases needing human evidence gathering or discrepancy investigation / all eligible cases in the measurement period. Routine operator review is not an investigation. | Decrease |
 | Active investigation time | Median human minutes per investigation, excluding time waiting for a source or counterparty. | Decrease |
 
-Agree baselines, periods and improvement targets with Atlas when introducing measurement. Compare similar case types, particularly when assessing the later agent. Lower investigation rates or times only count as improvement if correctness is maintained. These are product goals, not first-cycle measured results or claims about custody execution speed.
+Agree baselines, periods and improvement targets with Atlas when introducing measurement. Compare similar case types, particularly when assessing the later agent. Lower investigation rates or times only count as improvement if correctness is maintained. These are product goals, not first cycle measured results or claims about custody execution speed.
 
 The Range conversation should resolve these questions:
 
@@ -353,6 +353,6 @@ The Range conversation should resolve these questions:
 5. Which exception most deserves the next-sprint evidence-gathering agent?
 6. What are the accounting bridge, eligible event types, treatment of collateral/unrealized P&L, and source deduplication keys?
 7. What source freshness/completeness guarantees, reconciliation tolerances, window times and review deadlines fit Atlas's actual operations?
-8. Is an MVP control-and-decision pilot the right first-cycle outcome, with agent investigation and reliable instruction delivery sequenced afterward?
+8. Is an MVP control-and-decision pilot the right first cycle outcome, with agent investigation and reliable instruction delivery sequenced afterward?
 
 The shared product boundary remains: Range calculates and controls the amount to settle; external custody systems move funds; Range observes evidence and reconciles the result. This expanded PRD is the behavioral reference for the prototype follow-ups above and for the next deck wording pass.

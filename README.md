@@ -40,5 +40,5 @@ Open <http://localhost:4173/>. Use the collapsible presenter controls to reset a
 
 - `spec.html` is the readable in-site version of the pilot proposal.
 - `spec.md` is the Markdown source used for that page.
-- `engineering-appendix.html` and `engineering-appendix.md` contain the implementation reference detail.
+- `engineering-appendix.html` is the in-depth technical spec; `engineering-appendix.md` is its source.
 - The prototype links to the pilot spec from its top bar, and the spec links back to the walkthrough.
