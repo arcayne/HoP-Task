@@ -130,12 +130,14 @@ I would use this proposal, the prototype, the team's issue tracker and shared te
 
 **First-cycle scope:** no metrics dashboard, instrumentation or formal KPI collection. At the end of two weeks, review observed errors, operator feedback and unresolved assumptions with the team, then choose the next improvement. This retrospective is qualitative learning, not a measured performance claim. Engineering QA remains part of delivery.
 
-## Walk through the first-cycle cases
+## 7. Walk through the first-cycle cases
 
-**Let’s explore the prototype together:** review a normal settlement, follow the amount across missed windows, and investigate a case where settlement has not been observed. For each case, we can test whether the amount, evidence and next operator action are clear.
+**Start with the interactive prototype:** use the presenter controls at the bottom of the screen to walk through the cases in order. They guide you through a normal settlement, missed windows, settlement not observed, and the position mismatch example.
+
+Follow the highlighted next action and the question in the presenter panel. You do not need to understand every detail on the screen before starting; the walkthrough explains what to inspect and why.
 
 These cases illustrate the intended MVP. Investigation remains manual in the first cycle; agent support follows later.
 
-**[Explore the interactive prototype →](https://arcayne.github.io/HoP-Task/)**
+**[Open the interactive prototype →](https://arcayne.github.io/HoP-Task/)**
 
 The [engineering appendix](engineering-appendix.md) is available for questions about calculation rules and implementation.
