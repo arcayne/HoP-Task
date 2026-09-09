@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to MVP proposal <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the MVP proposal.</p><nav class="spec-toc"><a href="spec.html">← MVP proposal</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-two-weeks">Two-week scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">View Markdown source <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>MVP</span></div><h1 id="range-off-chain-settlement-engineering-appendix">Range off-chain
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to MVP proposal <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the MVP proposal.</p><nav class="spec-toc"><a href="spec.html">← MVP proposal</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-the-pilot">Pilot scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">View Markdown source <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>MVP</span></div><h1 id="range-off-chain-settlement-engineering-appendix">Range off-chain
 settlement: engineering appendix</h1>
 <p><strong>Status:</strong> optional reference, 8 September 2026<br />
 <strong>Audience:</strong> Range product, operations, compliance, and
@@ -455,7 +455,7 @@ evidence in a new version and returns to Ready to settle if all other
 controls pass. The amount remains 110,000 USDC. No settlement event or
 balancing adjustment is invented. If the discrepancy remains
 unexplained, the case stays open.</p>
-<h2 id="5-what-we-ship-in-two-weeks">5. What we ship in two weeks</h2>
+<h2 id="5-what-we-ship-in-the-pilot">5. What we ship in the pilot</h2>
 <h3 id="in-scope">In scope</h3>
 <ul>
 <li>One pilot settlement arrangement: Northstar Institutional, one
@@ -991,7 +991,7 @@ PM-led walkthroughs test explanation and the correct next action.</td>
 or automated actions.</td>
 </tr>
 <tr>
-<td>What did we learn in the first two weeks?</td>
+<td>What did we learn?</td>
 <td>Test stale data, partial observations, repeated refresh and changed
 versions; review observed errors and operator feedback.</td>
 <td>Close the two weeks with a retrospective and choose the next

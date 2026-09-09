@@ -147,7 +147,7 @@ The raw custody-to-venue difference is now 90,000 USDC, but Range must not repla
 
 **Resolution in this example:** operations identifies a custody reporting error and obtains a corrected source snapshot showing 1,000,000 USDC. Range reruns reconciliation, records the corrected evidence in a new version and returns to Ready to settle if all other controls pass. The amount remains 110,000 USDC. No settlement event or balancing adjustment is invented. If the discrepancy remains unexplained, the case stays open.
 
-## 5. What we ship in two weeks
+## 5. What we ship in the pilot
 
 ### In scope
 
@@ -303,7 +303,7 @@ The calculation must be deterministic and replayable. Repeating Check again on t
 |---|---|---|
 | Can we trust the answer? | Agree accounting and matching rules; build deterministic calculation, reconciliation and controls against independently checked cases. | Resolve unsupported inputs or narrow the pilot. More UI or automation will not fix an unreliable source model. |
 | Can an operator act on it? | Build queue, case, evidence and notes against the shared outputs. PM-led walkthroughs test explanation and the correct next action. | Improve unclear evidence and guidance before adding more scenarios or automated actions. |
-| What did we learn in the first two weeks? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
+| What did we learn? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
 
 The backend carries the main uncertainty, so the frontend builds against versioned fixtures from the first days. The team uses a shared scenario set and reviews the prototype daily. The MVP review is the default end state; controlled live use needs the matching rule, controls, and operational ownership to be validated first.
 

@@ -99,16 +99,18 @@ The operator reviews the proposed association. Once sufficient receipt evidence 
 
 When an operator invokes it, the next-increment agent gathers and explains evidence. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
 
-## 5. What we prove in the two-week pilot
+## 5. What we prove in the pilot
 
 1. **Can we trust the answer?** Agree the accounting and evidence rules, then replay real examples with known outcomes. Build calculation, reconciliation and controls first. If the sources cannot support a reliable answer, narrow the pilot before adding automation.
 2. **Can an operator act on it?** Build the queue, case, evidence and notes around those examples. Test whether operators can explain the amount and choose the correct next step without help. Use their mistakes to improve the workflow.
-3. **What did we learn in the first two weeks?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
+3. **What did we learn?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
 
 **FE contract:** display the backend's versioned amount, direction, readiness, evidence and allowed actions. The prototype guides layout; FE does not recalculate money. Detailed rules and known prototype follow-ups are in the appendix.
 
-**Manual now:** custody execution and exception investigation, plus the first agent skill and its evaluation fixtures. 
-**Next:** agent-assisted evidence gathering, built on the MVP foundation. 
+**Manual now:** custody execution and exception investigation, plus the first agent skill and its evaluation fixtures.
+
+**Next:** agent-assisted evidence gathering, built on the MVP foundation.
+
 **Later:** authorized settlement-instruction delivery, approval integration and recovery, followed by broader coverage. Sending instructions and moving funds are distinct; both Range managed delivery and execution are deferred in this first cut.
 
 I would use this proposal, the prototype, the team's issue tracker and shared test cases to align the work. BE owns calculation and checks; FE builds against their agreed outputs. I own assumptions, prioritization and PM led operator QA; engineers own implementation and technical testing. Review evidence and blockers together, and adjust scope when assumptions fail.
