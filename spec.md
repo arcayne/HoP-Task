@@ -1,6 +1,6 @@
 # Range settlement: MVP proposal
 
-**Interview pre read · about seven minutes · discussion draft**
+**Interview pre read · about eight minutes · discussion draft**
 
 ## The decision
 
@@ -14,10 +14,20 @@ With one backend engineer and one frontend engineer, I would spend the first two
 
 **Pilot assumptions:** one account relationship, USDC, agreed realized P&L, fees and funding. These accounting rules need validation with Atlas.
 
+> **Assumptions I am making, and what I need Range to confirm**
+>
+> - **Assumed:** Atlas is the customer; Northstar's authorized payer executes transfers in the existing custody process, and Range observes the result through existing read connectors.
+> - **Assumed:** the amount to settle is a net obligation from posted realized P&L, fees and funding; unrealized P&L and collateral movements do not contribute until agreed.
+> - **Open:** what evidence is *sufficient* for Range to mark a settlement as observed — a shared transfer reference plus matching accounts, asset/network, direction and amount is the proposed rule.
+> - **Open:** who may initiate the external transfer, and which existing operational controls prevent a duplicate transfer during the pilot, since Range cannot in this cycle.
+> - **Open:** which policies are hard blocks and which route to compliance review; and whether an MVP shadow pilot is the right first-cycle outcome, with agent investigation and instruction delivery sequenced after it.
+
 ## 1. The workflow
 
 
 **Automatic:** reconcile hourly and at two daily settlement windows.
+
+**Why intra-day, and on what condition:** a window brings a case forward for review; the reason to settle intra-day rather than end-of-day is exposure. Propose that a case is surfaced early when the net amount exceeds an agreed exposure threshold or the mirrored margin utilization crosses a configured level, whichever comes first, so operations reviews the amount before the venue's or custodian's cutoff rather than after it.
 
 **On human request:** the operator can rerun using available connected records. 
 
@@ -98,6 +108,8 @@ The identifiers below are illustrative custody record references, such as transa
 The operator reviews the proposed association. Once sufficient receipt evidence arrives through the existing connectors, deterministic matching revalidates and applies 110k once, leaving **15k**. Readiness still depends on current controls.
 
 When an operator invokes it, the next-increment agent gathers and explains evidence. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
+
+**Agent roadmap:** read-only evidence brief on a selected exception → recommended next action with cited sources → automatic triage of low-risk, well-evidenced exceptions with human review of the rest → never execution; each step is enabled only after the previous one is evaluated against manual investigation on the same cases.
 
 ## 5. What we prove in the pilot
 

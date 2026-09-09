@@ -5,7 +5,7 @@
 <header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>MVP proposal</span><a class="back-link" href="index.html">Back to prototype <span aria-hidden="true">↗</span></a></div></header>
 <div class="spec-shell"><aside class="spec-sidebar" aria-label="Spec navigation"><div class="sidebar-kicker">READING GUIDE</div><p class="sidebar-intro">A short proposal for the MVP and the first workflow we would build with Atlas.</p><nav class="spec-toc"><a href="#the-decision">The decision</a><a href="#1-the-workflow">1. The workflow</a><a href="#2-calculate-the-amount-and-verify-the-positions">2. Calculate and verify</a><a href="#3-what-blocks-settlement-and-who-resolves-it">3. Blocks and resolution</a><a href="#4-what-should-the-agent-investigate">4. Agent investigation</a><a href="#5-what-we-prove-in-the-pilot">5. Pilot proof</a><a href="#6-product-success-and-pilot-learning">6. Success and learning</a><a href="#7-interactive-prototype">7. Interactive prototype</a></nav><div class="sidebar-links"><a href="engineering-appendix.html">Engineering appendix (Optional) <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>INTERVIEW PRE-READ</span><span>ABOUT SEVEN MINUTES</span><span>MVP</span></div><h1 id="range-settlement-mvp-proposal">Range settlement: MVP
 proposal</h1>
-<p><strong>Interview pre read · about seven minutes · discussion
+<p><strong>Interview pre read · about eight minutes · discussion
 draft</strong></p>
 <h2 id="the-decision">The decision</h2>
 <p>Give Atlas Exchange one clear answer for Northstar Institutional:
@@ -27,6 +27,29 @@ balances, and configured policies and controls.</p>
 <p><strong>Pilot assumptions:</strong> one account relationship, USDC,
 agreed realized P&amp;L, fees and funding. These accounting rules need
 validation with Atlas.</p>
+<blockquote>
+<p><strong>Assumptions I am making, and what I need Range to
+confirm</strong></p>
+<ul>
+<li><strong>Assumed:</strong> Atlas is the customer; Northstar’s
+authorized payer executes transfers in the existing custody process, and
+Range observes the result through existing read connectors.</li>
+<li><strong>Assumed:</strong> the amount to settle is a net obligation
+from posted realized P&amp;L, fees and funding; unrealized P&amp;L and
+collateral movements do not contribute until agreed.</li>
+<li><strong>Open:</strong> what evidence is <em>sufficient</em> for
+Range to mark a settlement as observed — a shared transfer reference plus
+matching accounts, asset/network, direction and amount is the proposed
+rule.</li>
+<li><strong>Open:</strong> who may initiate the external transfer, and
+which existing operational controls prevent a duplicate transfer during
+the pilot, since Range cannot in this cycle.</li>
+<li><strong>Open:</strong> which policies are hard blocks and which
+route to compliance review; and whether an MVP shadow pilot is the right
+first-cycle outcome, with agent investigation and instruction delivery
+sequenced after it.</li>
+</ul>
+</blockquote>
 <h2 id="1-the-workflow">1. The workflow</h2><section class="workflow-visual" aria-labelledby="workflow-visual-title">
   <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE MVP RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">MVP workflow</span></div>
   <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
@@ -57,6 +80,13 @@ validation with Atlas.</p>
 </section>
 <p><strong>Automatic:</strong> reconcile hourly and at two daily
 settlement windows.</p>
+<p><strong>Why intra-day, and on what condition:</strong> a window
+brings a case forward for review; the reason to settle intra-day rather
+than end-of-day is exposure. Propose that a case is surfaced early when
+the net amount exceeds an agreed exposure threshold or the mirrored
+margin utilization crosses a configured level, whichever comes first, so
+operations reviews the amount before the venue’s or custodian’s cutoff
+rather than after it.</p>
 <p><strong>On human request:</strong> the operator can rerun using
 available connected records.</p>
 <p>The agent does not trigger this action in the MVP. Start with two
@@ -266,6 +296,12 @@ explains evidence. It does not approve payments, change accounting
 rules, clear hard blocks or retry transfers. Evaluate it on correct
 citations, unsupported matches and investigation time before live
 use.</p>
+<p><strong>Agent roadmap:</strong> read-only evidence brief on a
+selected exception → recommended next action with cited sources →
+automatic triage of low-risk, well-evidenced exceptions with human
+review of the rest → never execution; each step is enabled only after
+the previous one is evaluated against manual investigation on the same
+cases.</p>
 <h2 id="5-what-we-prove-in-the-pilot">5. What we prove in the pilot</h2>
 <ol type="1">
 <li><strong>Can we trust the answer?</strong> Agree the accounting and
