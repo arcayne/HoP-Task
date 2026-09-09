@@ -8,7 +8,7 @@ Give Atlas Exchange one clear answer for Northstar Institutional: **what is the 
 
 With one backend engineer and one frontend engineer, I would spend the first two weeks proving calculation, controls and the operator workflow in an MVP pilot. The authorized payer uses the existing custody process. Range observes the resulting settlement through existing read connectors.
 
-**Pilot assumption — shadow mode:** During these two weeks, Range compares its calculation and control result with the existing process. The output is informational: Range does not authorize or stop live transfers, and the existing custody process remains authoritative.
+**Pilot assumption, shadow mode:** During these two weeks, Range compares its calculation and control result with the existing process. The output is informational: Range does not authorize or stop live transfers, and the existing custody process remains authoritative.
 
 **Already available:** account mapping, last successfully settled positions, current venue/custody activity and balances, and configured policies and controls.
 
@@ -18,7 +18,7 @@ With one backend engineer and one frontend engineer, I would spend the first two
 >
 > - **Assumed:** Atlas is the customer; Northstar's authorized payer executes transfers in the existing custody process, and Range observes the result through existing read connectors.
 > - **Assumed:** the amount to settle is a net obligation from posted realized P&L, fees and funding; unrealized P&L and collateral movements do not contribute until agreed.
-> - **Open:** what evidence is *sufficient* for Range to mark a settlement as observed — a shared transfer reference plus matching accounts, asset/network, direction and amount is the proposed rule.
+> - **Open:** what evidence is *sufficient* for Range to mark a settlement as observed. The proposed rule is a shared transfer reference plus matching accounts, asset/network, direction and amount.
 > - **Open:** who may initiate the external transfer, and which existing operational controls prevent a duplicate transfer during the pilot, since Range cannot in this cycle.
 > - **Open:** which policies are hard blocks and which route to compliance review; and whether an MVP shadow pilot is the right first-cycle outcome, with agent investigation and instruction delivery sequenced after it.
 
@@ -27,7 +27,7 @@ With one backend engineer and one frontend engineer, I would spend the first two
 
 **Automatic:** reconcile hourly and at two daily settlement windows.
 
-**Why intra-day, and on what condition:** a window brings a case forward for review; the reason to settle intra-day rather than end-of-day is exposure. Propose that a case is surfaced early when the net amount exceeds an agreed exposure threshold or the mirrored margin utilization crosses a configured level, whichever comes first, so operations reviews the amount before the venue's or custodian's cutoff rather than after it.
+**Why intra-day:** exposure, and learning. Surface a case early when the net amount passes an agreed threshold or margin utilization crosses a configured level, so operations reviews it before the custody cutoff. Frequent runs in these two weeks also give us many verified calculation and control results, the foundation the agent will be built on.
 
 **On human request:** the operator can rerun using available connected records. 
 

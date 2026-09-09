@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><meta name="description" content="Range settlement MVP proposal and discussion draft." /><title>Range — MVP proposal</title><link rel="stylesheet" href="spec.css" /></head>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><meta name="description" content="Range settlement MVP proposal and discussion draft." /><title>Range MVP proposal</title><link rel="stylesheet" href="spec.css" /></head>
 <body>
 <header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>MVP proposal</span><a class="back-link" href="index.html">Back to prototype <span aria-hidden="true">↗</span></a></div></header>
 <div class="spec-shell"><aside class="spec-sidebar" aria-label="Spec navigation"><div class="sidebar-kicker">READING GUIDE</div><p class="sidebar-intro">A short proposal for the MVP and the first workflow we would build with Atlas.</p><nav class="spec-toc"><a href="#the-decision">The decision</a><a href="#1-the-workflow">1. The workflow</a><a href="#2-calculate-the-amount-and-verify-the-positions">2. Calculate and verify</a><a href="#3-what-blocks-settlement-and-who-resolves-it">3. Blocks and resolution</a><a href="#4-what-should-the-agent-investigate">4. Agent investigation</a><a href="#5-what-we-prove-in-the-pilot">5. Pilot proof</a><a href="#6-product-success-and-pilot-learning">6. Success and learning</a><a href="#7-interactive-prototype">7. Interactive prototype</a></nav><div class="sidebar-links"><a href="engineering-appendix.html">Engineering appendix (Optional) <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>INTERVIEW PRE-READ</span><span>ABOUT SEVEN MINUTES</span><span>MVP</span></div><h1 id="range-settlement-mvp-proposal">Range settlement: MVP
@@ -16,7 +16,7 @@ the first two weeks proving calculation, controls and the operator
 workflow in an MVP pilot. The authorized payer uses the existing custody
 process. Range observes the resulting settlement through existing read
 connectors.</p>
-<p><strong>Pilot assumption — shadow mode:</strong> During these two
+<p><strong>Pilot assumption, shadow mode:</strong> During these two
 weeks, Range compares its calculation and control result with the
 existing process. The output is informational: Range does not authorize
 or stop live transfers, and the existing custody process remains
@@ -38,9 +38,9 @@ Range observes the result through existing read connectors.</li>
 from posted realized P&amp;L, fees and funding; unrealized P&amp;L and
 collateral movements do not contribute until agreed.</li>
 <li><strong>Open:</strong> what evidence is <em>sufficient</em> for
-Range to mark a settlement as observed — a shared transfer reference plus
-matching accounts, asset/network, direction and amount is the proposed
-rule.</li>
+Range to mark a settlement as observed. The proposed rule is a shared
+transfer reference plus matching accounts, asset/network, direction and
+amount.</li>
 <li><strong>Open:</strong> who may initiate the external transfer, and
 which existing operational controls prevent a duplicate transfer during
 the pilot, since Range cannot in this cycle.</li>
@@ -80,13 +80,12 @@ sequenced after it.</li>
 </section>
 <p><strong>Automatic:</strong> reconcile hourly and at two daily
 settlement windows.</p>
-<p><strong>Why intra-day, and on what condition:</strong> a window
-brings a case forward for review; the reason to settle intra-day rather
-than end-of-day is exposure. Propose that a case is surfaced early when
-the net amount exceeds an agreed exposure threshold or the mirrored
-margin utilization crosses a configured level, whichever comes first, so
-operations reviews the amount before the venue’s or custodian’s cutoff
-rather than after it.</p>
+<p><strong>Why intra-day:</strong> exposure, and learning. Surface a
+case early when the net amount passes an agreed threshold or margin
+utilization crosses a configured level, so operations reviews it before
+the custody cutoff. Frequent runs in these two weeks also give us many
+verified calculation and control results, the foundation the agent will
+be built on.</p>
 <p><strong>On human request:</strong> the operator can rerun using
 available connected records.</p>
 <p>The agent does not trigger this action in the MVP. Start with two
