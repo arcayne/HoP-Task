@@ -636,6 +636,13 @@ acknowledgment, idempotency, status reconciliation and recovery designed
 together.</p>
 <h3 id="what-should-the-agent-investigate-next-agent-increment">What
 should the agent investigate? Next agent increment</h3>
+<p><strong>Triggering sequence:</strong> In this MVP, an operator
+manually invokes the skill on a selected exception. The team inspects
+its citations, candidate matches and explanation of gaps, then records
+what worked. It is not triggered by a schedule or exception
+automatically. The next increment makes this a supported case action; an
+automatic trigger comes only after the manual evaluation shows that the
+evidence brief is reliable.</p>
 <p>The first candidate is <strong>settlement not observed after an
 expected external action</strong>. It has a concrete input, bounded read
 access, and a useful output an operator can verify. Start with this
@@ -718,7 +725,10 @@ matching rule requires a successful custody debit and corresponding
 Atlas receipt with a shared transfer reference, matching asset/network,
 accounts, direction and amount.</p>
 <p>The agent reads the case and available source records and returns two
-candidates:</p>
+candidates. The identifiers below are illustrative custody record
+references, such as transaction IDs. They are not Jira tickets or
+investigation cases; in a real workflow they would link to authorized
+source records.</p>
 <table>
 <thead>
 <tr>

@@ -212,6 +212,8 @@ The last two cases answer the task's settlement-instruction question while prese
 
 ### What should the agent investigate? Next agent increment
 
+**Triggering sequence:** In this MVP, an operator manually invokes the skill on a selected exception. The team inspects its citations, candidate matches and explanation of gaps, then records what worked. It is not triggered by a schedule or exception automatically. The next increment makes this a supported case action; an automatic trigger comes only after the manual evaluation shows that the evidence brief is reliable.
+
 The first candidate is **settlement not observed after an expected external action**. It has a concrete input, bounded read access, and a useful output an operator can verify. Start with this rather than a general-purpose financial agent.
 
 1. An exception opens with the calculation version, reason, relevant accounts, asset and time range.
@@ -235,7 +237,7 @@ Do not treat an agent's confidence score as settlement evidence. Before introduc
 
 Range shows 125,000 USDC owed: 110,000 from earlier activity plus 15,000 of new activity. An operator reports that Northstar paid 110,000 through its custody provider. This report opens an investigation but does not reduce the amount. For this example, the agreed automatic matching rule requires a successful custody debit and corresponding Atlas receipt with a shared transfer reference, matching asset/network, accounts, direction and amount.
 
-The agent reads the case and available source records and returns two candidates:
+The agent reads the case and available source records and returns two candidates. The identifiers below are illustrative custody record references, such as transaction IDs. They are not Jira tickets or investigation cases; in a real workflow they would link to authorized source records.
 
 | Candidate | Evidence found | Assessment |
 |---|---|---|

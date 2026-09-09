@@ -84,7 +84,9 @@ The backend stores calculation versions, check results and case notes with actor
 
 ## 4. What should the agent investigate?
 
-**Agent foundation is part of this MVP; agent-assisted investigation is the next increment.** During this MVP, operations investigates manually while we create the first agent skill, define its permitted reads, prepare fixtures, and test candidate-record and gap explanations. The skill is not triggered automatically. In the next increment, it helps operations find relevant transactions and explain missing or conflicting evidence. For example, Range shows 125k owed and the operator reports paying 110k. The agent gathers two candidate records:
+**Agent foundation is part of this MVP; agent-assisted investigation is the next increment.** During this MVP, an operator manually invokes the skill on a selected case. The team inspects its citations, candidate matches and explanation of gaps, then records what worked before expanding the workflow. The skill is not triggered by a schedule or exception automatically. In the next increment, it becomes a supported case action; only after that evaluation would we consider an automatic trigger. For example, Range shows 125k owed and the operator reports paying 110k. The agent gathers two candidate records.
+
+The identifiers below are illustrative custody record references, such as transaction IDs. They are not Jira tickets or investigation cases; in a real workflow they would link to authorized source records.
 
 | Evidence | Agent assessment |
 |---|---|
@@ -95,7 +97,7 @@ The backend stores calculation versions, check results and case notes with actor
 
 The operator reviews the proposed association. Once sufficient receipt evidence arrives through the existing connectors, deterministic matching revalidates and applies 110k once, leaving **15k**. Readiness still depends on current controls.
 
-The next-increment agent gathers and explains evidence automatically. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
+When an operator invokes it, the next-increment agent gathers and explains evidence. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
 
 ## 5. What we prove in the two-week pilot
 
