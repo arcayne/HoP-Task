@@ -37,9 +37,14 @@ check(currentAmount(state.scenario) === 110000, 'M1 validated amount');
 check(statusFor(state.scenario).label === 'Needs attention', 'M1 position mismatch needs attention');
 check(nextActionCopy(state.scenario, 'case').includes('07 Sep 2026 · 12:00 UTC'), 'M1 keeps validated timestamp');
 check(nextActionCopy(state.scenario, 'case').includes('07 Sep 2026 · 13:00 UTC'), 'M1 shows discrepancy timestamp');
+check(renderChecksCard(state.scenario).includes('Corrected position snapshot awaiting reconciliation.') === false, 'M1 initial controls do not claim corrected snapshot');
+checkAgain(); check(state.scenario.history[0][1] === 'Position reconciliation checked; discrepancy remains.', 'M1 unchanged check is position-specific');
+state.scenario = clone(SCENARIOS.s4); state.scenario.correctedSnapshot = true;
+check(renderChecksCard(state.scenario).includes('Corrected position snapshot awaiting reconciliation.'), 'M1 corrected snapshot awaits reconciliation');
 state.scenario.correctedSnapshot = true; checkAgain();
 check(state.scenario.positionMismatch === false, 'M1 corrected snapshot clears mismatch');
 check(currentAmount(state.scenario) === 110000, 'M1 corrected snapshot preserves amount');
+check((renderChecksCard(state.scenario).match(/Position reconciliation/g) || []).length === 1, 'M1 reconciled controls show one position result');
 
 check(!${JSON.stringify(appSource)}.includes('sim-instruction'), 'no Range instruction model');
 check(!${JSON.stringify(appSource)}.includes('Overlap protection'), 'no duplicate-transfer control claim');
