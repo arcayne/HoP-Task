@@ -6,9 +6,9 @@
 
 Give Atlas Exchange one clear answer for Northstar Institutional: **what is the amount to settle, is it safe and permitted to proceed, and why**
 
-With one backend engineer and one frontend engineer, I would spend the first two weeks proving calculation, controls and the operator workflow in shadow mode. The authorized payer uses the existing custody process. Range observes the resulting settlement through existing read connectors.
+With one backend engineer and one frontend engineer, I would spend the first two weeks proving calculation, controls and the operator workflow in comparison mode. The authorized payer uses the existing custody process. Range observes the resulting settlement through existing read connectors.
 
-**Shadow mode:** compare Range's results with the existing process. Range's recommendations do not authorize or stop live transfers during this pilot.
+**Comparison mode:** compare Range's results with the existing process. Range's recommendations do not authorize or stop live transfers during this pilot.
 
 **Already available:** account mapping, last successfully settled positions, current venue/custody activity and balances, and configured policies and controls.
 
@@ -16,23 +16,10 @@ With one backend engineer and one frontend engineer, I would spend the first two
 
 ## 1. The workflow
 
-```mermaid
-flowchart LR
-    A[Existing source records] --> B[Calculate and reconcile]
-    B --> C{Fresh evidence and controls pass?}
-    C -->|Yes| D[Operator reviews current amount]
-    D -. Compare in shadow .-> E[Existing custody process]
-    E --> F[Range checks settlement evidence]
-    F --> B
-    C -->|No| G[Exception: reason, evidence, owner, next step]
-    G --> H[Operations investigates in existing tools]
-    H -->|Updated records via connectors| A
-    G -. Next sprint .-> I[Agent finds candidate records and explains gaps]
-    I -. Evidence brief .-> H
-```
 
-**Automatic:** reconcile hourly and at two daily settlement windows. 
-**On human request:** the operator to rerun using available connected records. 
+**Automatic:** reconcile hourly and at two daily settlement windows.
+
+**On human request:** the operator can rerun using available connected records. 
 
 The agent does not trigger this action in the MVP. Start with two windows to limit manual review work, validate the cadence against source latency, risk and custody cutoffs. A window reviews the latest amount, it creates no separate debt.
 
@@ -75,7 +62,7 @@ New activity can change the amount without a transfer. A reported payment cannot
 
 **Range flags:** “Custody shows 20k less than expected. No available transaction explains the difference.” It shows **Needs attention** alongside the last validated 110k amount and timestamp. It does not assume the missing 20k was paid to Atlas.
 
-**In the shadow MVP:** detecting and explaining this difference is in scope. Operations investigates through the existing process; Range does not provide an accounting correction tool. The next section explains how the result comes back.
+**In the MVP:** detecting and explaining this difference is in scope. Operations investigates through the existing process; Range does not provide an accounting correction tool. The next section explains how the result comes back.
 
 ## 3. What blocks settlement, and who resolves it?
 
@@ -85,7 +72,7 @@ New activity can change the amount without a transfer. A reported payment cannot
 | Insufficient available funds, invalid destination or policy/risk breach | Explain the failed configured check; route to operations or compliance. |
 | Expected settlement has missing or ambiguous evidence | Investigate before recommending another transfer. A timeout does not prove failure. |
 
-The case gives the operator **reason → source evidence → owner → next action**. A block means Range cannot recommend proceeding; the shadow pilot does not control the live custody process.
+The case gives the operator **reason → source evidence → owner → next action**. A block means Range cannot recommend proceeding; the MVP pilot does not control the live custody process.
 
 **How an investigation comes back into Range:**
 
@@ -93,11 +80,11 @@ The case gives the operator **reason → source evidence → owner → next acti
 2. A missing transaction or corrected balance must arrive through the existing read connectors. A note, uploaded receipt or direct database edit is not a financial correction mechanism in this MVP.
 3. The next scheduled run, or a human **Check again**, re-evaluates those records. Range saves a new calculation/check result and updates the case if the checks pass. If the required evidence is still unavailable, the case stays open.
 
-The backend stores calculation versions, check results and case notes with actor/time and source references. Shadow reviewers record agreement or disagreement with a result; this is not live payment approval. Evidence ingestion and manual adjustment workflows need discovery before they are added.
+The backend stores calculation versions, check results and case notes with actor/time and source references. Reviewers record agreement or disagreement with a result; this is not live payment approval. Evidence ingestion and manual adjustment workflows need discovery before they are added.
 
 ## 4. What should the agent investigate?
 
-**Proposed for the sprint after the shadow MVP.** The agent would help operations find relevant transactions and explain missing or conflicting evidence. For example, Range shows 125k owed and the operator reports paying 110k. The agent gathers two candidate records:
+**Agent foundation is part of this MVP; agent-assisted investigation is the next increment.** During this MVP, operations investigates manually while we create the first agent skill, define its permitted reads, prepare fixtures, and test candidate-record and gap explanations. The skill is not triggered automatically. In the next increment, it helps operations find relevant transactions and explain missing or conflicting evidence. For example, Range shows 125k owed and the operator reports paying 110k. The agent gathers two candidate records:
 
 | Evidence | Agent assessment |
 |---|---|
@@ -108,18 +95,18 @@ The backend stores calculation versions, check results and case notes with actor
 
 The operator reviews the proposed association. Once sufficient receipt evidence arrives through the existing connectors, deterministic matching revalidates and applies 110k once, leaving **15k**. Readiness still depends on current controls.
 
-The agent gathers and explains evidence automatically. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
+The next-increment agent gathers and explains evidence automatically. It does not approve payments, change accounting rules, clear hard blocks or retry transfers. Evaluate it on correct citations, unsupported matches and investigation time before live use.
 
 ## 5. What we prove in the two-week pilot
 
 1. **Can we trust the answer?** Agree the accounting and evidence rules, then replay real examples with known outcomes. Build calculation, reconciliation and controls first. If the sources cannot support a reliable answer, narrow the pilot before adding automation.
 2. **Can an operator act on it?** Build the queue, case, evidence and notes around those examples. Test whether operators can explain the amount and choose the correct next step without help. Use their mistakes to improve the workflow.
-3. **What did we learn in shadow mode?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
+3. **What did we learn in comparison mode?** Check missed windows, partial observations, stale data and repeated refreshes. Close the two weeks with an operator/engineering retrospective: what was wrong, what was confusing, and what should we build next?
 
 **FE contract:** display the backend's versioned amount, direction, readiness, evidence and allowed actions. The prototype guides layout; FE does not recalculate money. Detailed rules and known prototype follow-ups are in the appendix.
 
-**Manual now:** custody execution and exception investigation. 
-**Next:** evidence gathering agent. 
+**Manual now:** custody execution and exception investigation, plus the first agent skill and its evaluation fixtures. 
+**Next:** agent-assisted evidence gathering, built on the MVP foundation. 
 **Later:** authorized settlement-instruction delivery, approval integration and recovery, followed by broader coverage. Sending instructions and moving funds are distinct; both Range managed delivery and execution are deferred in this first cut.
 
 I would use this proposal, the prototype, the team's issue tracker and shared test cases to align the work. BE owns calculation and checks; FE builds against their agreed outputs. I own assumptions, prioritization and PM led operator QA; engineers own implementation and technical testing. Review evidence and blockers together, and adjust scope when assumptions fail.
@@ -143,7 +130,7 @@ I would use this proposal, the prototype, the team's issue tracker and shared te
 
 **Let’s explore the prototype together:** review a normal settlement, follow the amount across missed windows, and investigate a case where settlement has not been observed. For each case, we can test whether the amount, evidence and next operator action are clear.
 
-These cases illustrate the intended shadow MVP. Investigation remains manual in the first cycle; agent support follows later.
+These cases illustrate the intended MVP. Investigation remains manual in the first cycle; agent support follows later.
 
 **[Explore the interactive prototype →](https://arcayne.github.io/HoP-Task/)**
 

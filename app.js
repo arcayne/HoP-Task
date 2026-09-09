@@ -34,7 +34,7 @@ const SCENARIOS = {
     observationAmount: 110000, observationAvailable: false, lastChecked: '07 Sep 2026 · 15:00 UTC', checkResult: 'no-match', handoffReviewed: true, review: { decision: 'disagree', comment: 'Reported externally; matching source evidence is still missing.', amount: 125000, version: 'v3', time: '07 Sep 2026 · 15:00 UTC' }, notes: [{ body: 'Operator reports paying 110,000 USDC externally; verify in the existing custody workflow.', reference: 'reported://northstar-110k', owner: 'Atlas Settlement Operations', time: '07 Sep 2026 · 15:00 UTC' }], stale: false, sourceUnavailable: false,
     cutoff: '07 Sep 2026 · 13:15 UTC', proposalVersion: 'v3 · 13:18 UTC', destination: 'Atlas settlement wallet', sourceAccount: 'Northstar trading account · sim://acct-ns-01',
     history: [
-      ['review', 'Shadow result reviewed', 'Disagreed · operator reported paying 110,000 USDC; no matching source evidence', '07 Sep 2026 · 13:24 UTC'],
+      ['review', 'Comparison result reviewed', 'Disagreed · operator reported paying 110,000 USDC; no matching source evidence', '07 Sep 2026 · 13:24 UTC'],
       ['activity', 'New activity accrued', '+15,000 USDC · current amount to settle 125,000', '07 Sep 2026 · 14:30 UTC'],
       ['checked', 'Settlement evidence checked', 'No matching settlement observed', '07 Sep 2026 · 15:00 UTC']
     ]
@@ -145,7 +145,7 @@ function renderAmountCard(s, projection, status) {
 }
 function renderHandoffCard(s, projection) {
   if (!s.review) return '';
-  return `<article class="detail-card handoff-card"><div class="detail-card-header"><h2>Shadow review</h2><span class="illustrative">Feedback only</span></div><div class="handoff-body"><p>This records agreement or disagreement with Range's result. It does not authorize, stop, or confirm a transfer.</p><div class="handoff-grid"><div><span>Decision</span><strong>${s.review.decision === 'agree' ? 'Agreed with result' : 'Disagreed with result'}</strong></div><div><span>Amount / direction</span><strong>${formatAmount(s.review.amount)} · ${direction(s.review.amount, 'Northstar')}</strong></div><div><span>Calculation version</span><strong>${s.review.version}</strong></div><div><span>Saved</span><strong>${s.review.time}</strong></div></div>${s.review.comment ? `<p class="review-comment"><strong>Comment:</strong> ${escapeHtml(s.review.comment)}</p>` : ''}</div></article>`;
+  return `<article class="detail-card handoff-card"><div class="detail-card-header"><h2>Comparison review</h2><span class="illustrative">Feedback only</span></div><div class="handoff-body"><p>This records agreement or disagreement with Range's result. It does not authorize, stop, or confirm a transfer.</p><div class="handoff-grid"><div><span>Decision</span><strong>${s.review.decision === 'agree' ? 'Agreed with result' : 'Disagreed with result'}</strong></div><div><span>Amount / direction</span><strong>${formatAmount(s.review.amount)} · ${direction(s.review.amount, 'Northstar')}</strong></div><div><span>Calculation version</span><strong>${s.review.version}</strong></div><div><span>Saved</span><strong>${s.review.time}</strong></div></div>${s.review.comment ? `<p class="review-comment"><strong>Comment:</strong> ${escapeHtml(s.review.comment)}</p>` : ''}</div></article>`;
 }
 function renderCaseNotes(s) {
   const notes = (s.notes || []).map(note => `<div class="case-note"><div><strong>${escapeHtml(note.owner)}</strong><time>${escapeHtml(note.time)}</time></div><p>${escapeHtml(note.body)}</p>${note.reference ? `<span class="record-tag">Reference: ${escapeHtml(note.reference)}</span>` : ''}</div>`).join('');
@@ -192,7 +192,7 @@ function saveReview(decision) {
   const comment = $('#review-comment')?.value.trim() || '';
   s.handoffReviewed = true;
   s.review = { decision, comment, amount: currentAmount(s), version: s.proposalVersion, time: nowLabel() };
-  s.history.unshift(['review', 'Shadow result review saved', `${decision === 'agree' ? 'Agreed' : 'Disagreed'} · ${formatAmount(currentAmount(s))} · version ${s.proposalVersion}`, nowLabel()]);
+  s.history.unshift(['review', 'Comparison result review saved', `${decision === 'agree' ? 'Agreed' : 'Disagreed'} · ${formatAmount(currentAmount(s))} · version ${s.proposalVersion}`, nowLabel()]);
   closeModal(); state.view = 'case'; render(); showToast(`${decision === 'agree' ? 'Agreement' : 'Disagreement'} saved · no transfer authorized`);
 }
 function checkAgain() {

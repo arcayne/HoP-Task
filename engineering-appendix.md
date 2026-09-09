@@ -12,7 +12,7 @@ Range should give Atlas operations one reliable answer for each institutional cl
 
 For the first pilot, Range does not execute custody transfers or try to infer an in-progress payment. An authorized operator uses Atlas's existing custody process outside Range. Range marks the amount as settled only when it later observes sufficient matching evidence.
 
-The first cycle is a shadow pilot: Range's recommendations are compared with the existing process and do not authorize or stop live transfers. The short pilot proposal owns product scope. This appendix supplies implementation detail within that scope; it does not add a live approval, manual adjustment or metrics workstream.
+The first cycle is an MVP pilot: Range's recommendations are compared with the existing process and do not authorize or stop live transfers. The short pilot proposal owns product scope. This appendix supplies implementation detail within that scope; it does not add a live approval, manual adjustment or metrics workstream.
 
 This proves the control and decision layer first: calculation, reconciliation, controls, an operator case, and an auditable result.
 
@@ -24,7 +24,7 @@ Atlas's operator coordinates the settlement decision. Whoever controls the payin
 
 The task gives Range read access to venue activity, custody-account activity, balances, transactions, positions, account ownership, the last successfully settled position, and configured policies and controls. No new read connectors, vendor-specific custody integrations, or KYC are required.
 
-The pilot adds reconciliation, calculation, controls, exception cases and shadow review history, with observed settlements arriving through existing connectors. External custody execution continues independently.
+The pilot adds reconciliation, calculation, controls, exception cases and review history, with observed settlements arriving through existing connectors. External custody execution continues independently.
 
 ## 3. Core model
 
@@ -93,7 +93,7 @@ Each relationship has one clear operational state:
 | State | Meaning | Operator action |
 |---|---|---|
 | Up to date | A valid current calculation is zero and no blocking reason remains. | Review history if needed. |
-| Ready to settle | A nonzero amount has complete, fresh evidence and passes configured controls. | Compare the recommendation with the existing process and record a shadow review. |
+| Ready to settle | A nonzero amount has complete, fresh evidence and passes configured controls. | Compare the recommendation with the existing process and record a comparison review. |
 | Needs attention | Evidence is stale, incomplete, inconsistent, or a control requires review or blocks a recommendation. | Inspect and comment on the result; investigate through the existing process. |
 
 Observed settlement is a recorded result in the calculation and history, not an operational state or a claim that Range watched a payment in progress. The queue can show a new nonzero amount after an earlier settlement has been observed.
@@ -106,7 +106,7 @@ Evaluate blocking data and controls before the zero-amount state. A stale zero i
 2. **Open settlement windows twice daily.** A window makes eligible cases visible for review; it does not create a payment or reset the amount.
 3. **Apply deterministic controls.** Range evaluates data freshness and completeness, account and asset mapping, reconciliation agreement, available settlement funds where configured, and applicable policy or compliance controls.
 4. **Give the operator a decision.** The queue shows the amount, direction, readiness, as-of time, and next permitted action. The case explains calculation, controls, source records, and any exception.
-5. **Compare with the existing process.** A shadow reviewer records agreement or disagreement with Range's amount and control result. The authorized payer continues using the existing custody process independently; a Range review does not initiate, approve or hold that transfer.
+5. **Compare with the existing process.** A reviewer records agreement or disagreement with Range's amount and control result. The authorized payer continues using the existing custody process independently; a Range review does not initiate, approve or hold that transfer.
 6. **Check for evidence.** Hourly runs and operator-triggered Check again use the same matching and calculation rules. Range applies a matching observed movement once and recalculates the remainder. A successful check with no new records leaves the amount unchanged; an unavailable or stale source changes readiness and explains the limitation.
 
 ### Reconciliation timing and controls
@@ -124,7 +124,7 @@ Reconciliation must compare like-for-like positions at the same cutoff. Mirrored
 | Policy and compliance | Applicable policy/license controls pass and required reviews are complete. | A hard policy block or an outstanding required human review. |
 | Unresolved settlement evidence | There is no unresolved report or evidence of a transfer that might already cover the amount. | A reported attempt with unknown outcome, conflicting records, or an unexplained excess movement. |
 
-Each check returns pass, review or block with a reason, evidence and owner. Freshness thresholds, tolerances and review limits are configuration decisions to agree with the team. A control requiring review identifies a question for the existing operations/compliance process; it is not permission to bypass a hard block. Range withholds a proceed recommendation when blocked. Shadow agreement/disagreement and case notes remain available on that result, while transfers initiated in external custody tools remain outside Range's control.
+Each check returns pass, review or block with a reason, evidence and owner. Freshness thresholds, tolerances and review limits are configuration decisions to agree with the team. A control requiring review identifies a question for the existing operations/compliance process; it is not permission to bypass a hard block. Range withholds a proceed recommendation when blocked. Review agreement/disagreement and case notes remain available on that result, while transfers initiated in external custody tools remain outside Range's control.
 
 An absent settlement record is normal before anyone expects settlement. Raise an exception when an operator reports an attempt, evidence conflicts, or an agreed review deadline passes without expected evidence. Check again by itself must not imply that a transfer was attempted or failed.
 
@@ -156,8 +156,9 @@ The raw custody-to-venue difference is now 90,000 USDC, but Range must not repla
 - Hourly reconciliation and two daily review windows.
 - Freshness, completeness, reconciliation, mapping, balance, and configured-policy checks with a pass, review, or block reason.
 - A queue and case showing the amount, direction, as-of time, evidence, controls, and next action.
-- Shadow review, human-triggered Check again, and an exception case with a named owner, notes/references and auditable history. Investigation and escalation use existing tools.
-- Versioned fixtures and QA coverage for the agreed scenarios before shadow use.
+- Comparison review, human-triggered Check again, and an exception case with a named owner, notes/references and auditable history. Investigation and escalation use existing tools.
+- Agent foundation: define the first read-only skill, permission-scoped source access, fixtures and evaluation cases. The skill is not triggered automatically in this MVP.
+- Versioned fixtures and QA coverage for the agreed scenarios before MVP use.
 
 ### Handled manually
 
@@ -172,7 +173,6 @@ The raw custody-to-venue difference is now 90,000 USDC, but Range must not repla
 - Preventing duplicate transfers made in an external custody tool.
 - Automated recovery from a failed, timed-out, partial, or ambiguous external transfer.
 - New connectors, custody integrations, KYC, cross-asset netting, and wider client or asset coverage.
-- An agent in the first two-week build.
 
 The duplicate-transfer risk is explicit: the pilot can calculate one current amount and make observed settlements visible, but it cannot prevent a user from initiating the same transfer twice in an external tool. This is a reason to keep the pilot cohort small and use the existing operational controls until a later execution design is validated.
 
@@ -182,19 +182,21 @@ The system never turns missing evidence into a financial conclusion. A case need
 
 The case shows source references and their observation times, the last reconciled amount, the reason it is not ready, and the named next step. An operator may escalate, but cannot override a hard block or mark settlement as observed without the required evidence.
 
+During this MVP, operations investigates exceptions manually while the team builds the first agent skill, permission-scoped reads, fixtures and evaluation cases. The skill is not triggered automatically. The next increment starts with a read-only evidence brief that an operator can review.
+
 The first useful next step for a later agent is narrow: collect candidate transaction IDs or custody links from available records, explain why each could match, and identify what remains unknown. The operator confirms the evidence; deterministic reconciliation then updates Range. The agent does not change an amount, clear a case, approve settlement, or bypass a policy.
 
 ### Exception workflow and operator resolution
 
-**First-cycle boundary: shadow investigation support.** Range detects and explains exceptions, stores a named owner plus short notes and source references, and reruns deterministic checks. Operations investigates in existing venue/custody tools and escalates through its existing process. Missing or corrected financial records must arrive through the existing read connectors. A human can request Check again; the MVP agent does not exist and cannot trigger it. Notes and links are contextual evidence, not commands to change an amount or mark settlement observed. There is no receipt-upload ingestion, manual financial adjustment or direct database-edit workflow in scope. If connectors cannot supply the required evidence, the case stays unresolved and that limitation is recorded for discovery.
+**First-cycle boundary: manual investigation plus agent foundation.** Range detects and explains exceptions, stores a named owner plus short notes and source references, and reruns deterministic checks. Operations investigates in existing venue/custody tools and escalates through its existing process. Missing or corrected financial records must arrive through the existing read connectors. A human can request Check again; the MVP agent does not exist and cannot trigger it. Notes and links are contextual evidence, not commands to change an amount or mark settlement observed. There is no receipt-upload ingestion, manual financial adjustment or direct database-edit workflow in scope. If connectors cannot supply the required evidence, the case stays unresolved and that limitation is recorded for discovery.
 
-Range persists calculation versions, check results, source references and case history. Only a new valid source-backed calculation/check result changes financial values or clears the corresponding block. Shadow review records agreement or disagreement with Range's result; it does not authorize a live payment. Range's blocks apply to its recommendations, while the existing process continues to govern live transfers.
+Range persists calculation versions, check results, source references and case history. Only a new valid source-backed calculation/check result changes financial values or clears the corresponding block. Comparison review records agreement or disagreement with Range's result; it does not authorize a live payment. Range's blocks apply to its recommendations, while the existing process continues to govern live transfers.
 
 Keep one active case for the relationship and asset, with separately recorded reasons. A new hourly result updates its evidence and amount instead of creating another case for the same unresolved issue.
 
 Conceptual lifecycle: `Open → Investigating externally → Waiting for connected evidence → Resolved by checks`. In the first cycle, notes describe investigation progress; Range clears an exception reason only when the relevant deterministic checks pass. There is no manual financial-resolution or approval-state editor.
 
-Record an operations owner, reason, age, last update and next action. The operator can inspect linked records, add a reference or note and request a refresh; investigation and escalation use the existing operations/compliance process. Closing a note or accepting an explanation does not mark settlement as observed. Resolution requires the relevant deterministic checks to pass; a persisting or recurring problem keeps or reopens the case. Richer assignment, evidence-association and resolution-approval workflows require discovery after the shadow MVP.
+Record an operations owner, reason, age, last update and next action. The operator can inspect linked records, add a reference or note and request a refresh; investigation and escalation use the existing operations/compliance process. Closing a note or accepting an explanation does not mark settlement as observed. Resolution requires the relevant deterministic checks to pass; a persisting or recurring problem keeps or reopens the case. Richer assignment, evidence-association and resolution-approval workflows require discovery after this MVP.
 
 | Difficult case | First-cycle behavior | How work resumes |
 |---|---|---|
@@ -208,7 +210,7 @@ Record an operations owner, reason, age, last update and next action. The operat
 
 The last two cases answer the task's settlement-instruction question while preserving the first-cycle boundary: Range has no instruction transport or execution state machine in this pilot. It can record reported or observed evidence and guide the operator. Reliable authorized instruction delivery remains a later product increment with acknowledgment, idempotency, status reconciliation and recovery designed together.
 
-### What should the agent investigate? Proposed after the shadow MVP
+### What should the agent investigate? Next agent increment
 
 The first candidate is **settlement not observed after an expected external action**. It has a concrete input, bounded read access, and a useful output an operator can verify. Start with this rather than a general-purpose financial agent.
 
@@ -222,7 +224,7 @@ The first candidate is **settlement not observed after an expected external acti
 |---|---|---|
 | Deterministic system, sprint one | Calculate, reconcile, run configured controls, match qualifying settlement evidence, update readiness, open/update cases and audit history. | Humans agree accounting rules and control configuration; unresolved evidence stays blocked or in review. |
 | Agent, next increment | Gather read-only evidence, explain differences, draft case summaries and recommend actions. | Operator validates proposed evidence associations; compliance decides policy-review cases. |
-| Operator | Review a specific amount/evidence version and record agreement or disagreement in shadow mode. | External transfer decisions and authorization remain in the existing process. |
+| Operator | Review a specific amount/evidence version and record agreement or disagreement in comparison mode. | External transfer decisions and authorization remain in the existing process. |
 | Deferred execution workflow | None in sprint one. | No agent-created transfer, retry, cancellation, policy override, or ledger adjustment. Design and authorize separately. |
 
 Do not treat an agent's confidence score as settlement evidence. Before introducing it, evaluate known matches, no-match cases, conflicting sources and misleading record text; require source-backed claims, permission-scoped reads and safe escalation. Measure whether it reduces evidence-gathering time without increasing unsupported matches. If it does not, retain manual investigation.
@@ -252,7 +254,7 @@ The remaining amount becomes Ready to settle only after current reconciliation, 
 
 ### Decisions and approval history
 
-For the first cycle, record whether a shadow reviewer agrees or disagrees with a specific calculation and control result, with an optional explanatory note. A changed version has not yet been reviewed; keep the prior review attached to its original inputs. Range still calculates readiness and blocked recommendations, but no review authorizes or asserts a custody transfer. Required external approvals happen in the existing process; a future Range approval flow must define approver roles and separation of duties.
+For the first cycle, record whether a comparison reviewer agrees or disagrees with a specific calculation and control result, with an optional explanatory note. A changed version has not yet been reviewed; keep the prior review attached to its original inputs. Range still calculates readiness and blocked recommendations, but no review authorizes or asserts a custody transfer. Required external approvals happen in the existing process; a future Range approval flow must define approver roles and separation of duties.
 
 For every calculation, check, human decision and eventual agent recommendation, store: time, actor or service identity, case and calculation version, source references and coverage, amount/direction, rule/policy version, result and reason, and next action/owner. Preserve prior decisions and their inputs. A useful explanation reads: “Northstar owes 110,000 USDC: 100,000 carried forward − 20,000 earned + 30,000 new activity; no settlement observed; controls pass at this cutoff.” If it is blocked, name the failed check and what evidence will resolve it.
 
@@ -264,15 +266,15 @@ Use the high-fidelity prototype for layout and interaction discussion. This PRD 
 |---|---|
 | Queue | Northstar relationship, amount, explicit payer/payee direction, readiness, source as-of time, exception reason and next action; open the case. |
 | Case | The same amount/version, calculation components, observed settlements, control results, evidence links and history. Distinguish the latest validated amount from a newer unverified result. |
-| Shadow review | Current amount, payer/payee, cutoff, evidence version and controls. Record agreement/disagreement and an optional comment for Ready, Up to date or Needs attention results. If the version changes while the review is open, show the change and require selection of the current version before saving. Prior reviews remain immutable. |
+| Comparison review | Current amount, payer/payee, cutoff, evidence version and controls. Record agreement/disagreement and an optional comment for Ready, Up to date or Needs attention results. If the version changes while the review is open, show the change and require selection of the current version before saving. Prior reviews remain immutable. |
 | Exception | Reason, missing/conflicting evidence, owner, age and next step. Add a reference/note or select Check again. Investigation and escalation use the existing process. |
 | Check again | Show checking, completed with changes, completed with no new evidence, or unavailable. Preserve the last validated information on failure. Never show success merely because the refresh request completed. |
 
 BE returns one versioned result used by all surfaces: relationship/asset; signed amount and explicit direction; calculation version and cutoff; source coverage; component totals and evidence references; readiness and reason codes; allowed actions; exception/owner; review history; and last-check outcome. FE displays that result and does not independently calculate money or decide permission. The exact API shape is agreed together, not prescribed here.
 
-FE should cover loading, unavailable source, zero amount, reversed direction, Needs attention, changed-version review, empty history and repeated refresh. Shadow comments are allowed on blocked results; payment authorization and financial override actions are absent. If a result changes during review, show the change and request review of the latest version. Keep the earlier reviewed amount in history; do not relabel a newer amount as already reviewed. S1–S3 fixtures shared with BE are the starting contract, with the position-mismatch example and edge cases below added before acceptance.
+FE should cover loading, unavailable source, zero amount, reversed direction, Needs attention, changed-version review, empty history and repeated refresh. Comparison comments are allowed on blocked results; payment authorization and financial override actions are absent. If a result changes during review, show the change and request review of the latest version. Keep the earlier reviewed amount in history; do not relabel a newer amount as already reviewed. S1–S3 fixtures shared with BE are the starting contract, with the position-mismatch example and edge cases below added before acceptance.
 
-**Prototype follow-up:** the current site demonstrates the main scenarios but needs these rules aligned before it is used as acceptance evidence: evaluate stale/invalid evidence before showing Up to date; distinguish an ordinary no-match refresh from a missed expected settlement; and preserve the actual reviewed amount/version when the current amount changes. Show the shadow boundary and add thin case-note/reference support; richer assignment and resolution tooling is deferred. These are specified here; this PRD revision does not claim that the site already implements them.
+**Prototype follow-up:** the current site demonstrates the main scenarios but needs these rules aligned before it is used as acceptance evidence: evaluate stale/invalid evidence before showing Up to date; distinguish an ordinary no-match refresh from a missed expected settlement; and preserve the actual reviewed amount/version when the current amount changes. Show the MVP boundary and add thin case-note/reference support; richer assignment and resolution tooling is deferred. These are specified here; this PRD revision does not claim that the site already implements them.
 
 ## 8. Required scenarios and acceptance criteria
 
@@ -299,9 +301,9 @@ The calculation must be deterministic and replayable. Repeating Check again on t
 |---|---|---|
 | Can we trust the answer? | Agree accounting and matching rules; build deterministic calculation, reconciliation and controls against independently checked cases. | Resolve unsupported inputs or narrow the pilot. More UI or automation will not fix an unreliable source model. |
 | Can an operator act on it? | Build queue, case, evidence and notes against the shared outputs. PM-led walkthroughs test explanation and the correct next action. | Improve unclear evidence and guidance before adding more scenarios or automated actions. |
-| What did we learn in shadow mode? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
+| What did we learn in comparison mode? | Test stale data, partial observations, repeated refresh and changed versions; review observed errors and operator feedback. | Close the two weeks with a retrospective and choose the next improvement. Formal KPI collection is deferred. |
 
-The backend carries the main uncertainty, so the frontend builds against versioned fixtures from the first days. The team uses a shared scenario set and reviews the prototype daily. A shadow run is the default end state; controlled live use needs the matching rule, controls, and operational ownership to be validated first.
+The backend carries the main uncertainty, so the frontend builds against versioned fixtures from the first days. The team uses a shared scenario set and reviews the prototype daily. An MVP comparison run is the default end state; controlled live use needs the matching rule, controls, and operational ownership to be validated first.
 
 ### How I would run this as Head of Product
 
@@ -313,7 +315,7 @@ I would organize work as vertical slices: correct amount and evidence first; con
 
 We would agree the response contract first so FE can progress against fixtures while BE resolves data semantics. I would hold a short daily review of blockers and changed assumptions and regular working walkthroughs. New edge cases enter the shared fixtures, and material decisions go back into this PRD. If matching is not reliable, I would narrow the pilot and reduce optional polish before weakening controls.
 
-Before calling the pilot usable, I would replay the acceptance cases with operations, compare the amounts against an independent expected calculation, record gaps, and observe whether operators can explain the amount and next step unaided. Release readiness requires deterministic replay, no duplicate application, enforced hard blocks, traceable decisions and a named exception owner. A shadow run compares outputs with the current manual process; controlled live use is a separate decision after the evidence and external controls are validated.
+Before calling the pilot usable, I would replay the acceptance cases with operations, compare the amounts against an independent expected calculation, record gaps, and observe whether operators can explain the amount and next step unaided. Release readiness requires deterministic replay, no duplicate application, enforced hard blocks, traceable decisions and a named exception owner. An MVP comparison run compares outputs with the current manual process; controlled live use is a separate decision after the evidence and external controls are validated.
 
 ### What comes next
 
@@ -349,6 +351,6 @@ The Range conversation should resolve these questions:
 5. Which exception most deserves the next-sprint evidence-gathering agent?
 6. What are the accounting bridge, eligible event types, treatment of collateral/unrealized P&L, and source deduplication keys?
 7. What source freshness/completeness guarantees, reconciliation tolerances, window times and review deadlines fit Atlas's actual operations?
-8. Is a shadow control-and-decision pilot the right first-cycle outcome, with agent investigation and reliable instruction delivery sequenced afterward?
+8. Is an MVP control-and-decision pilot the right first-cycle outcome, with agent investigation and reliable instruction delivery sequenced afterward?
 
 The shared product boundary remains: Range calculates and controls the amount to settle; external custody systems move funds; Range observes evidence and reconciles the result. This expanded PRD is the behavioral reference for the prototype follow-ups above and for the next deck wording pass.

@@ -1,8 +1,8 @@
-# HoP / Range shadow settlement prototype
+# HoP / Range settlement MVP prototype
 
 A local, fixture-driven interview prototype for comparing Range's calculation and evidence with Atlas's existing process. It uses synthetic records for Northstar Institutional and USDC.
 
-**Shadow prototype · illustrative data.** Compare Range's results with the existing process. Range does not authorize or stop live transfers. This site does not build the production backend, connect custody providers, or implement agent execution.
+**MVP prototype · illustrative data.** Compare Range's results with the existing process. Range does not authorize or stop live transfers. This site does not build the production backend, connect custody providers, or implement agent execution.
 
 ## Run locally
 
@@ -30,9 +30,9 @@ Open <http://localhost:4173/>. Use the collapsible presenter controls to reset a
 
 ## Files
 
-- `index.html` — shadow prototype shell and presenter controls
+- `index.html` — MVP prototype shell and presenter controls
 - `styles.css` — existing operations UI styling and focused review/note states
-- `app.js` — signed-event projection, shadow reviews, notes, refresh semantics, guided exercises, and evidence/history
+- `app.js` — signed-event projection, comparison reviews, notes, refresh semantics, guided exercises, and evidence/history
 - `fallback.html` — static fallback capture for deck use
 - `specs/` and `work/` — included implementation and audit artifacts
 

@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to pilot spec <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the pilot proposal.</p><nav class="spec-toc"><a href="spec.html">← Pilot spec</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-two-weeks">Two-week scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">Read raw Markdown <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>SHADOW MVP</span></div><h1 id="range-off-chain-settlement-engineering-appendix">Range off-chain
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#f5f7f3" /><title>Range — Engineering appendix</title><link rel="stylesheet" href="spec.css" /></head><body><header class="spec-topbar"><a class="brand" href="index.html" aria-label="Back to Range prototype"><span class="brand-mark" aria-hidden="true">R</span><span><strong>range</strong><small>operations workspace</small></span></a><div class="spec-topbar-actions"><span class="doc-label"><span class="status-dot"></span>Engineering appendix</span><a class="back-link" href="spec.html">Back to MVP proposal <span aria-hidden="true">↗</span></a></div></header><div class="spec-shell"><aside class="spec-sidebar" aria-label="Appendix navigation"><div class="sidebar-kicker">REFERENCE NOTES</div><p class="sidebar-intro">Calculation, reconciliation, exception and implementation detail behind the MVP proposal.</p><nav class="spec-toc"><a href="spec.html">← MVP proposal</a><a href="#3-core-model">Core model</a><a href="#4-mvp-workflow">MVP workflow</a><a href="#5-what-we-ship-in-two-weeks">Two-week scope</a><a href="#6-exceptions-and-evidence-rules">Exceptions and evidence</a></nav><div class="sidebar-links"><a href="engineering-appendix.md">View Markdown source <span>↗</span></a><a href="index.html">Open prototype <span>↗</span></a></div></aside><main class="spec-document"><div class="document-meta"><span>ENGINEERING APPENDIX</span><span>REFERENCE</span><span>MVP</span></div><h1 id="range-off-chain-settlement-engineering-appendix">Range off-chain
 settlement: engineering appendix</h1>
 <p><strong>Status:</strong> optional reference, 8 September 2026<br />
 <strong>Audience:</strong> Range product, operations, compliance, and
@@ -18,10 +18,10 @@ evidence supports that answer.</strong></p>
 to infer an in-progress payment. An authorized operator uses Atlas's
 existing custody process outside Range. Range marks the amount as
 settled only when it later observes sufficient matching evidence.</p>
-<p>The first cycle is a shadow pilot: Range's recommendations are
-compared with the existing process and do not authorize or stop live
-transfers. The short pilot proposal owns product scope. This appendix
-supplies implementation detail within that scope; it does not add a live
+<p>The first cycle is an MVP pilot: Range's recommendations are compared
+with the existing process and do not authorize or stop live transfers.
+The short pilot proposal owns product scope. This appendix supplies
+implementation detail within that scope; it does not add a live
 approval, manual adjustment or metrics workstream.</p>
 <p>This proves the control and decision layer first: calculation,
 reconciliation, controls, an operator case, and an auditable result.</p>
@@ -40,9 +40,8 @@ successfully settled position, and configured policies and controls. No
 new read connectors, vendor-specific custody integrations, or KYC are
 required.</p>
 <p>The pilot adds reconciliation, calculation, controls, exception cases
-and shadow review history, with observed settlements arriving through
-existing connectors. External custody execution continues
-independently.</p>
+and review history, with observed settlements arriving through existing
+connectors. External custody execution continues independently.</p>
 <h2 id="3-core-model">3. Core model</h2>
 <h3 id="amount-to-settle-the-backend-calculation-contract">Amount to
 settle: the backend calculation contract</h3>
@@ -230,7 +229,7 @@ remains.</td>
 <td>A nonzero amount has complete, fresh evidence and passes configured
 controls.</td>
 <td>Compare the recommendation with the existing process and record a
-shadow review.</td>
+comparison review.</td>
 </tr>
 <tr>
 <td>Needs attention</td>
@@ -250,7 +249,7 @@ stale zero is still Needs attention. Up to date means a valid current
 calculation is zero; history explains whether settlement, offsetting
 activity, or both produced it.</p>
 <h2 id="4-mvp-workflow">4. MVP workflow</h2><section class="workflow-visual" aria-labelledby="workflow-visual-title">
-  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE PILOT RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">Shadow mode</span></div>
+  <div class="workflow-visual-heading"><div><span class="workflow-kicker">HOW THE MVP RUNS</span><h3 id="workflow-visual-title">Calculate first. Then choose the next safe action.</h3></div><span class="workflow-badge">MVP workflow</span></div>
   <div class="workflow-path workflow-path-top" aria-label="Core calculation path">
     <div class="workflow-node workflow-node-source"><span class="workflow-node-label">INPUT</span><strong>Existing source records</strong><small>Venue activity, custody balances, policies</small></div>
     <span class="workflow-arrow" aria-hidden="true">→</span>
@@ -261,21 +260,22 @@ activity, or both produced it.</p>
   <div class="workflow-branches">
     <div class="workflow-branch workflow-branch-yes">
       <div class="workflow-branch-label"><span>YES</span> Ready to review</div>
-      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Shadow review records agreement or disagreement</small></div>
-      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare in shadow</span></div>
+      <div class="workflow-node"><strong>Operator reviews current amount</strong><small>Reviewer records agreement or disagreement</small></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Compare with current process</span></div>
       <div class="workflow-node workflow-node-external"><strong>Existing custody process</strong><small>Authorized payer executes outside Range</small></div>
       <div class="workflow-connector workflow-connector-return"><span aria-hidden="true">↩</span><span>Range checks available settlement evidence</span></div>
     </div>
     <div class="workflow-branch workflow-branch-no">
       <div class="workflow-branch-label"><span>NO</span> Needs attention</div>
       <div class="workflow-node"><strong>Exception: reason, evidence, owner, next step</strong><small>Range blocks its proceed recommendation and keeps the last validated result visible</small></div>
-      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates in existing tools</span></div>
+      <div class="workflow-connector"><span aria-hidden="true">↓</span><span>Operations investigates manually in existing tools</span></div>
       <div class="workflow-node workflow-node-external"><strong>Updated records arrive through connectors</strong><small>Human Check again or the next scheduled run re-evaluates them</small></div>
     </div>
   </div>
-  <div class="workflow-agent"><span class="workflow-agent-tag">NEXT SPRINT</span><div><strong>Agent finds candidate records and explains gaps</strong><small>It returns an evidence brief to operations; it does not approve or trigger settlement.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
+  <div class="workflow-agent workflow-agent-current"><span class="workflow-agent-tag">THIS MVP</span><div><strong>Manual investigation + agent foundation</strong><small>Operations investigates while we define the first skill, permitted reads, fixtures and evaluation cases. The skill is not triggered automatically.</small></div></div>
+  <div class="workflow-agent workflow-agent-next"><span class="workflow-agent-tag">NEXT INCREMENT</span><div><strong>Agent-assisted investigation</strong><small>When invoked by an operator, the skill finds candidate records and explains gaps in a reviewable evidence brief.</small></div><span class="workflow-agent-arrow" aria-hidden="true">↗</span></div>
   <p class="workflow-caption">The loop returns to the source records after a new observation or corrected record. A settlement window reviews the latest amount; it does not create a separate debt.</p>
-</section><p class="workflow-reference-note">This is the same workflow shown in the short pilot proposal; the appendix adds the implementation detail below.</p>
+</section>
 <ol type="1">
 <li><strong>Reconcile hourly.</strong> Range calculates the current
 amount from agreed venue activity and observed settlements. It records
@@ -292,11 +292,11 @@ policy or compliance controls.</li>
 amount, direction, readiness, as-of time, and next permitted action. The
 case explains calculation, controls, source records, and any
 exception.</li>
-<li><strong>Compare with the existing process.</strong> A shadow
-reviewer records agreement or disagreement with Range's amount and
-control result. The authorized payer continues using the existing
-custody process independently; a Range review does not initiate, approve
-or hold that transfer.</li>
+<li><strong>Compare with the existing process.</strong> A reviewer
+records agreement or disagreement with Range's amount and control
+result. The authorized payer continues using the existing custody
+process independently; a Range review does not initiate, approve or hold
+that transfer.</li>
 <li><strong>Check for evidence.</strong> Hourly runs and
 operator-triggered Check again use the same matching and calculation
 rules. Range applies a matching observed movement once and recalculates
@@ -377,7 +377,7 @@ owner. Freshness thresholds, tolerances and review limits are
 configuration decisions to agree with the team. A control requiring
 review identifies a question for the existing operations/compliance
 process; it is not permission to bypass a hard block. Range withholds a
-proceed recommendation when blocked. Shadow agreement/disagreement and
+proceed recommendation when blocked. Review agreement/disagreement and
 case notes remain available on that result, while transfers initiated in
 external custody tools remain outside Range's control.</p>
 <p>An absent settlement record is normal before anyone expects
@@ -463,11 +463,14 @@ funding, and observed settlements.</li>
 configured-policy checks with a pass, review, or block reason.</li>
 <li>A queue and case showing the amount, direction, as-of time,
 evidence, controls, and next action.</li>
-<li>Shadow review, human-triggered Check again, and an exception case
-with a named owner, notes/references and auditable history.
+<li>Comparison review, human-triggered Check again, and an exception
+case with a named owner, notes/references and auditable history.
 Investigation and escalation use existing tools.</li>
+<li>Agent foundation: define the first read-only skill,
+permission-scoped source access, fixtures and evaluation cases. The
+skill is not triggered automatically in this MVP.</li>
 <li>Versioned fixtures and QA coverage for the agreed scenarios before
-shadow use.</li>
+MVP use.</li>
 </ul>
 <h3 id="handled-manually">Handled manually</h3>
 <ul>
@@ -490,7 +493,6 @@ tool.</li>
 external transfer.</li>
 <li>New connectors, custody integrations, KYC, cross-asset netting, and
 wider client or asset coverage.</li>
-<li>An agent in the first two-week build.</li>
 </ul>
 <p>The duplicate-transfer risk is explicit: the pilot can calculate one
 current amount and make observed settlements visible, but it cannot
@@ -508,6 +510,11 @@ matched safely.</p>
 last reconciled amount, the reason it is not ready, and the named next
 step. An operator may escalate, but cannot override a hard block or mark
 settlement as observed without the required evidence.</p>
+<p>During this MVP, operations investigates exceptions manually while
+the team builds the first agent skill, permission-scoped reads, fixtures
+and evaluation cases. The skill is not triggered automatically. The next
+increment starts with a read-only evidence brief that an operator can
+review.</p>
 <p>The first useful next step for a later agent is narrow: collect
 candidate transaction IDs or custody links from available records,
 explain why each could match, and identify what remains unknown. The
@@ -516,23 +523,23 @@ updates Range. The agent does not change an amount, clear a case,
 approve settlement, or bypass a policy.</p>
 <h3 id="exception-workflow-and-operator-resolution">Exception workflow
 and operator resolution</h3>
-<p><strong>First-cycle boundary: shadow investigation support.</strong>
-Range detects and explains exceptions, stores a named owner plus short
-notes and source references, and reruns deterministic checks. Operations
-investigates in existing venue/custody tools and escalates through its
-existing process. Missing or corrected financial records must arrive
-through the existing read connectors. A human can request Check again;
-the MVP agent does not exist and cannot trigger it. Notes and links are
-contextual evidence, not commands to change an amount or mark settlement
-observed. There is no receipt-upload ingestion, manual financial
-adjustment or direct database-edit workflow in scope. If connectors
-cannot supply the required evidence, the case stays unresolved and that
-limitation is recorded for discovery.</p>
+<p><strong>First-cycle boundary: manual investigation plus agent
+foundation.</strong> Range detects and explains exceptions, stores a
+named owner plus short notes and source references, and reruns
+deterministic checks. Operations investigates in existing venue/custody
+tools and escalates through its existing process. Missing or corrected
+financial records must arrive through the existing read connectors. A
+human can request Check again; the MVP agent does not exist and cannot
+trigger it. Notes and links are contextual evidence, not commands to
+change an amount or mark settlement observed. There is no receipt-upload
+ingestion, manual financial adjustment or direct database-edit workflow
+in scope. If connectors cannot supply the required evidence, the case
+stays unresolved and that limitation is recorded for discovery.</p>
 <p>Range persists calculation versions, check results, source references
 and case history. Only a new valid source-backed calculation/check
 result changes financial values or clears the corresponding block.
-Shadow review records agreement or disagreement with Range's result; it
-does not authorize a live payment. Range's blocks apply to its
+Comparison review records agreement or disagreement with Range's result;
+it does not authorize a live payment. Range's blocks apply to its
 recommendations, while the existing process continues to govern live
 transfers.</p>
 <p>Keep one active case for the relationship and asset, with separately
@@ -551,7 +558,7 @@ explanation does not mark settlement as observed. Resolution requires
 the relevant deterministic checks to pass; a persisting or recurring
 problem keeps or reopens the case. Richer assignment,
 evidence-association and resolution-approval workflows require discovery
-after the shadow MVP.</p>
+after this MVP.</p>
 <table>
 <thead>
 <tr>
@@ -623,9 +630,8 @@ reported or observed evidence and guide the operator. Reliable
 authorized instruction delivery remains a later product increment with
 acknowledgment, idempotency, status reconciliation and recovery designed
 together.</p>
-<h3
-id="what-should-the-agent-investigate-proposed-after-the-shadow-mvp">What
-should the agent investigate? Proposed after the shadow MVP</h3>
+<h3 id="what-should-the-agent-investigate-next-agent-increment">What
+should the agent investigate? Next agent increment</h3>
 <p>The first candidate is <strong>settlement not observed after an
 expected external action</strong>. It has a concrete input, bounded read
 access, and a useful output an operator can verify. Start with this
@@ -674,7 +680,7 @@ decides policy-review cases.</td>
 <tr>
 <td>Operator</td>
 <td>Review a specific amount/evidence version and record agreement or
-disagreement in shadow mode.</td>
+disagreement in comparison mode.</td>
 <td>External transfer decisions and authorization remain in the existing
 process.</td>
 </tr>
@@ -771,7 +777,7 @@ or contradicts the debit, the agent escalates the unresolved evidence;
 it does not manufacture a match.</p>
 <h3 id="decisions-and-approval-history">Decisions and approval
 history</h3>
-<p>For the first cycle, record whether a shadow reviewer agrees or
+<p>For the first cycle, record whether a comparison reviewer agrees or
 disagrees with a specific calculation and control result, with an
 optional explanatory note. A changed version has not yet been reviewed;
 keep the prior review attached to its original inputs. Range still
@@ -812,7 +818,7 @@ settlements, control results, evidence links and history. Distinguish
 the latest validated amount from a newer unverified result.</td>
 </tr>
 <tr>
-<td>Shadow review</td>
+<td>Comparison review</td>
 <td>Current amount, payer/payee, cutoff, evidence version and controls.
 Record agreement/disagreement and an optional comment for Ready, Up to
 date or Needs attention results. If the version changes while the review
@@ -844,7 +850,7 @@ permission. The exact API shape is agreed together, not prescribed
 here.</p>
 <p>FE should cover loading, unavailable source, zero amount, reversed
 direction, Needs attention, changed-version review, empty history and
-repeated refresh. Shadow comments are allowed on blocked results;
+repeated refresh. Comparison comments are allowed on blocked results;
 payment authorization and financial override actions are absent. If a
 result changes during review, show the change and request review of the
 latest version. Keep the earlier reviewed amount in history; do not
@@ -856,7 +862,7 @@ the main scenarios but needs these rules aligned before it is used as
 acceptance evidence: evaluate stale/invalid evidence before showing Up
 to date; distinguish an ordinary no-match refresh from a missed expected
 settlement; and preserve the actual reviewed amount/version when the
-current amount changes. Show the shadow boundary and add thin
+current amount changes. Show the MVP boundary and add thin
 case-note/reference support; richer assignment and resolution tooling is
 deferred. These are specified here; this PRD revision does not claim
 that the site already implements them.</p>
@@ -971,7 +977,7 @@ PM-led walkthroughs test explanation and the correct next action.</td>
 or automated actions.</td>
 </tr>
 <tr>
-<td>What did we learn in shadow mode?</td>
+<td>What did we learn in comparison mode?</td>
 <td>Test stale data, partial observations, repeated refresh and changed
 versions; review observed errors and operator feedback.</td>
 <td>Close the two weeks with a retrospective and choose the next
@@ -981,8 +987,8 @@ improvement. Formal KPI collection is deferred.</td>
 </table>
 <p>The backend carries the main uncertainty, so the frontend builds
 against versioned fixtures from the first days. The team uses a shared
-scenario set and reviews the prototype daily. A shadow run is the
-default end state; controlled live use needs the matching rule,
+scenario set and reviews the prototype daily. An MVP comparison run is
+the default end state; controlled live use needs the matching rule,
 controls, and operational ownership to be validated first.</p>
 <h3 id="how-i-would-run-this-as-head-of-product">How I would run this as
 Head of Product</h3>
@@ -1020,9 +1026,10 @@ with operations, compare the amounts against an independent expected
 calculation, record gaps, and observe whether operators can explain the
 amount and next step unaided. Release readiness requires deterministic
 replay, no duplicate application, enforced hard blocks, traceable
-decisions and a named exception owner. A shadow run compares outputs
-with the current manual process; controlled live use is a separate
-decision after the evidence and external controls are validated.</p>
+decisions and a named exception owner. An MVP comparison run compares
+outputs with the current manual process; controlled live use is a
+separate decision after the evidence and external controls are
+validated.</p>
 <h3 id="what-comes-next">What comes next</h3>
 <ol type="1">
 <li><strong>Next increment:</strong> the read-only evidence-gathering
@@ -1112,13 +1119,13 @@ collateral/unrealized P&amp;L, and source deduplication keys?</li>
 <li>What source freshness/completeness guarantees, reconciliation
 tolerances, window times and review deadlines fit Atlas's actual
 operations?</li>
-<li>Is a shadow control-and-decision pilot the right first-cycle
-outcome, with agent investigation and reliable instruction delivery
-sequenced afterward?</li>
+<li>Is an MVP control-and-decision pilot the right first-cycle outcome,
+with agent investigation and reliable instruction delivery sequenced
+afterward?</li>
 </ol>
 <p>The shared product boundary remains: Range calculates and controls
 the amount to settle; external custody systems move funds; Range
 observes evidence and reconciles the result. This expanded PRD is the
 behavioral reference for the prototype follow-ups above and for the next
 deck wording pass.</p>
-<footer class="spec-footer"><a href="spec.html">Return to the pilot spec →</a><span>Source: <a href="engineering-appendix.md">engineering-appendix.md</a></span></footer></main></div></body></html>
+<footer class="spec-footer"><a href="spec.html">Return to the MVP proposal →</a><span>Source: <a href="engineering-appendix.md">engineering-appendix.md</a></span></footer></main></div></body></html>
